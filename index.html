@@ -16,7 +16,7 @@
         <div><span>REAL ESTATE OPERATIONS</span><h1>ESTATE OPS $PUBLISH</h1></div>
         <b id=connectionBadge class="live connecting" data-mode=mock><i></i><span id=connectionText>LINKING</span></b>
       </div>
-      <a class="creator-tag" href="https://x.com/monokern" target="_blank" rel="noreferrer"><small>CONCEPT BY</small><strong>@MONOKERN</strong></a>
+      <div class="creator-tag" aria-label="V SHARK"><small>OPERATED BY</small><strong>V SHARK 🦈</strong></div>
       <div class=metrics>
         <div><span>CREW</span><b>7 / 7</b></div>
         <div><span>PORTALS</span><b id=portalMetric>06</b></div>
@@ -123,13 +123,50 @@
   <dialog id="setupDialog"><form method="dialog" class="setup">
     <header><h2>Mission input — data for the agents</h2><button value="close">×</button></header>
     <div class="setup-grid">
-      <fieldset>
-        <legend>Seller brief</legend>
-        <label>Name<input id="inSeller" type="text" value="Anna Kowalska"></label>
-        <label>Phone<input id="inPhone" type="text" value="+48 601 234 567"></label>
-        <label>Photo file / path<input id="inPhoto" type="text" value="photo_apartment.jpg"></label>
-        <label>YouTube video URL<input id="inVideo" type="text" value="https://www.youtube.com/watch?v=RE-APARTMENT-TOUR"></label>
-        <label>Description<textarea id="inDescription" rows="3">Bright 2-room flat with a balcony, parking spot and a quiet neighbourhood.</textarea></label>
+      <fieldset class="listing-copy">
+        <legend>Listing content</legend>
+        <label>Title <span class="counter">max 70</span><input id="inTitle" maxlength="70" type="text" value="Sprzedam bezpośrednio Hotel i Restauracja Dolina Leśna"></label>
+        <label>Description <span class="counter">max 5000</span><textarea id="inDescription" maxlength="5000" rows="7">Sprzedam bezpośrednio – bez pośredników i prowizji
+
+Hotel i Restauracja „Dolina Leśna”
+
+Kompleks hotelowo-restauracyjny o dużym potencjale inwestycyjnym i adaptacyjnym, położony na malowniczej działce.
+
+Obiekty i powierzchnie
+- Działka: 2,1487 ha (21 487 m²)
+- Zabudowa łącznie: ok. 2280 m²
+- Budynek hotelowy: 750 m²
+- Budynek restauracji: 1 200 m²
+- Budynek administracyjno-mieszkalny: 330 m²
+
+Hotel
+- 45 miejsc noclegowych w pokojach 1-, 2- i 3-osobowych
+- Każdy pokój wyposażony w TV oraz taras lub balkon
+
+Restauracja i przestrzenie eventowe
+- Sala restauracyjna na 120 osób
+- Bar
+- Duża sala kominkowa
+- Sala konferencyjna
+- Jacuzzi i sauna
+- Jadalnia
+
+Media i infrastruktura
+- Wodociąg miejski
+- Własna oczyszczalnia ścieków
+- Światłowód 300 Mb/s
+- Instalacje solarne
+- Prąd 27 kW
+- Gaz
+- System magazynowania ciepła
+
+Idealny obiekt na hotel, restaurację, centrum konferencyjne, ośrodek wypoczynkowy lub dalszy rozwój inwestycyjny.</textarea></label>
+        <label>Video URL<input id="inVideo" type="url" value=""></label>
+      </fieldset>
+      <fieldset class="media-fieldset">
+        <legend>Photos · max 20 · drag to set priority</legend>
+        <label class="upload-zone" for="inPhotos"><input id="inPhotos" type="file" accept="image/*" multiple><strong>＋ Add photos</strong><span>Marketplace upload format · first 10 used when portal limit is 10</span></label>
+        <div id="photoList" class="photo-list" aria-live="polite"></div>
       </fieldset>
       <fieldset>
         <legend>Portals (one per line, from the Excel list)</legend>
@@ -143,14 +180,17 @@ Nieruchomosci.pl</textarea>
         <textarea id="inCreds" rows="4" placeholder="OLX | my.login@mail.com | ****"></textarea>
       </fieldset>
       <fieldset class="mandatory">
-        <legend>Data that must appear in EVERY listing (label = value, one per line)</legend>
-        <textarea id="inMandatory" rows="7">Price = 449 000 PLN
-Area = 48 m²
-Rooms = 2
-Floor = 3/5
-Address = ul. Kwiatowa 5, Warszawa
-Energy class = C
-Balcony = Yes</textarea>
+        <legend>Key parameters · agents can reuse these fields</legend>
+        <div class="parameter-grid">
+          <label>Price<input data-param="Cena" value="4500000 zł"></label><label>Price / m²<input data-param="Cena za m²" value="1974 zł / m2"></label>
+          <label>Województwo<input data-param="Województwo" value="lubuskie"></label><label>Powiat<input data-param="Powiat" value="słubicki"></label>
+          <label>Miasto / Gmina<input data-param="Miasto / Gmina" value="Ośno Lubuskie"></label><label>Kod pocztowy<input data-param="Kod pocztowy" value="69-220"></label>
+          <label>Dzielnica / Wieś<input data-param="Dzielnica / Wieś" value="Dolina Leśna"></label><label>Ulica<input data-param="Ulica" value="Dolina Leśna"></label>
+          <label>Rynek<input data-param="Rynek" value="Wtórny"></label><label>Rodzaj nieruchomości<input data-param="Rodzaj nieruchomości" value="obiekt"></label>
+          <label>Powierzchnia użytkowa<input data-param="Powierzchnia użytkowa" value="2280 m2"></label><label>Przeznaczenie<input data-param="Przeznaczenie" value="handlowy"></label>
+          <label>Liczba pomieszczeń<input data-param="Liczba pomieszczeń" value="80"></label><label>Media<input data-param="Media" value="prąd, woda, ciepła woda własna, gaz, telefon, internet, TV kablowa"></label>
+        </div>
+        <details><summary>Advanced fields (label = value)</summary><textarea id="inMandatory" rows="4"></textarea></details>
       </fieldset>
     </div>
     <footer><button value="close">Cancel</button><button id="saveSetup" class="primary">Save &amp; use for mission</button></footer>

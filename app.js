@@ -7,12 +7,12 @@ const ledger=window.listingLedger||null,artifactPackets=[],commSignals=[];
 let selectedArtifactId=null,ledgerToastTimer=null,commSequence=0;
 const INPUT_KEY="estate-ops.input.v1";
 const DEFAULT_MISSION={
- seller:{name:"Anna Kowalska",phone:"+48 601 234 567",photo:"photo_apartment.jpg",description:"Bright 2-room flat with a balcony, parking spot and a quiet neighbourhood.",video:"https://www.youtube.com/watch?v=RE-APARTMENT-TOUR"},
+ seller:{name:"",phone:"",photo:"",photos:[],title:"Sprzedam bezpośrednio Hotel i Restauracja Dolina Leśna",description:"Sprzedam bezpośrednio – bez pośredników i prowizji\n\nHotel i Restauracja „Dolina Leśna”\n\nKompleks hotelowo-restauracyjny o dużym potencjale inwestycyjnym i adaptacyjnym, położony na malowniczej działce.",video:""},
  portals:["OLX","Otodom","Morizon","Gratka","Domiporta","Nieruchomosci.pl"],
  credentials:{},
- mandatory:[{label:"Price",value:"449 000 PLN"},{label:"Area",value:"48 m²"},{label:"Rooms",value:"2"},{label:"Floor",value:"3/5"},{label:"Address",value:"ul. Kwiatowa 5, Warszawa"},{label:"Energy class",value:"C"},{label:"Balcony",value:"Yes"}]
+ mandatory:[{label:"Cena",value:"4500000 zł"},{label:"Cena za m²",value:"1974 zł / m2"},{label:"Województwo",value:"lubuskie"},{label:"Powiat",value:"słubicki"},{label:"Miasto / Gmina",value:"Ośno Lubuskie"},{label:"Kod pocztowy",value:"69-220"},{label:"Dzielnica / Wieś",value:"Dolina Leśna"},{label:"Ulica",value:"Dolina Leśna"},{label:"Rynek",value:"Wtórny"},{label:"Rodzaj nieruchomości",value:"obiekt"},{label:"Powierzchnia użytkowa",value:"2280 m2"},{label:"Przeznaczenie",value:"handlowy"},{label:"Liczba pomieszczeń",value:"80"},{label:"Media",value:"prąd, woda, ciepła woda własna, gaz, telefon, internet, TV kablowa"}]
 };
-function loadInput(){try{const s=JSON.parse(localStorage.getItem(INPUT_KEY)||"null");if(s&&s.seller)return s}catch{}return JSON.parse(JSON.stringify(DEFAULT_MISSION))}
+function loadInput(){try{const s=JSON.parse(localStorage.getItem(INPUT_KEY)||"null");if(s&&s.seller)return {...JSON.parse(JSON.stringify(DEFAULT_MISSION)),...s,seller:{...DEFAULT_MISSION.seller,...s.seller}}}catch{}return JSON.parse(JSON.stringify(DEFAULT_MISSION))}
 function saveInput(){try{localStorage.setItem(INPUT_KEY,JSON.stringify(state.mission))}catch{}}
 const state={running:false,paused:false,approval:false,complete:false,rejected:false,elapsed:0,duration:360000,last:performance.now(),cursor:0,verifyCursor:0,speed:1,count:0,spend:0,artifacts:0,particles:[],selected:"helm",ambientAt:performance.now()+1800,mode:"mission",publishedUrls:[],mission:loadInput()};
 state.mission.seoTitle=generateSeoTitleSafe();
@@ -41,14 +41,14 @@ function generateSeoTitleSafe(){try{return generateSeoTitle()}catch{return "2-ro
 function generateSeoTitle(){
  const m=state.mission,f=(re,fb)=>{const x=m.mandatory.find(k=>re.test(k.label));return x?x.value:fb};
  const rooms=f(/room|pokoj|комн/i,"2"),area=f(/area|powierzchn|площадь/i,"48 m²"),city=f(/city|miasto|город/i,"Warszawa");
- return rooms+"-room flat "+area+" · balcony · "+city+" — quick sale";
+ return (m.seller.title||((rooms+"-room flat "+area+" · balcony · "+city+" — quick sale"))).slice(0,70);
 }
 const timeline=[
  {at:1000,run(){const m=state.mission;event("helm","Listing opened","RE-042 received with seller brief, mandatory data, and portal accounts.","cyan");agent("helm","working","parsing seller & portals","command");stage("intake",1,"Scoping the publishing mission","Helm is parsing the seller brief, mandatory fields, and the portal account list.")}},
  {at:10000,run(){event("helm","Work graph created","3 workstreams — content, registration, verification — plus one approval gate.","green");agent("helm","delegating","routing scope","core");agent("scout","working","receiving content brief","core");agent("archive","working","receiving portal accounts","core");sendComm("helm","scout","scope.route · seller + mandatory fields","route");sendComm("helm","archive","accounts.route · portal cabinets for login","route");sealArtifact({baseId:"seller-brief",type:"intake",label:"SELLER BRIEF",createdBy:"helm",payload:{name:state.mission.seller.name,phone:"masked",photo:true,video:!!state.mission.seller.video,portals:state.mission.portals.length,mandatory:state.mission.mandatory.length}})}},
  {at:20000,run(){event("archive","Account registration started","Logging into personal cabinets on "+state.mission.portals.length+" portals with provided credentials.","cyan");agent("helm","idle","watching dependency graph","lounge");agent("archive","working","registering personal cabinets","registry");stage("register",18,"Registering portal accounts","Archive is logging into or registering profiles on each portal from the list.")}},
  {at:33000,run(){event("scout","Media validation started","Photo and video link checked against the mandatory listing fields.","cyan");agent("scout","working","validating photo & video","media");stage("content",20,"Media pack in progress","Scout is validating the seller photo and the optional YouTube video.")}},
- {at:47000,run(){event("scout","Media pack ready","Photo normalized; mandatory fields confirmed for every listing.","green");agent("scout","working","rendering media pack","photo");state.artifacts=2;sealArtifact({baseId:"media-pack",type:"media",label:"MEDIA PACK",createdBy:"scout",parentIds:["seller-brief"],payload:{photo:true,video:!!state.mission.seller.video}})}},
+ {at:47000,run(){event("scout","Media pack ready",(state.mission.seller.photos||[]).length+" photos prioritized; portals receive up to 10 in priority order. Mandatory fields confirmed for every listing.","green");agent("scout","working","rendering media pack","photo");state.artifacts=2;sealArtifact({baseId:"media-pack",type:"media",label:"MEDIA PACK",createdBy:"scout",parentIds:["seller-brief"],payload:{photo:true,video:!!state.mission.seller.video}})}},
  {at:60000,run(){event("forge","SEO copywriting started","Generating a selling title and description from mandatory data.","cyan");agent("forge","working","writing SEO selling title","writing");stage("content",34,"Writing SEO listings","Forge is producing the selling title and portal-ready listing copy.")}},
  {at:76000,run(){state.mission.seoTitle=generateSeoTitle();event("forge","SEO title ready","Selling title generated: \""+state.mission.seoTitle+"\"","green");agent("forge","working","rendering listing draft","writing");state.artifacts=4;sealArtifact({baseId:"seo-title",type:"seo_title",label:"SEO SELLING TITLE",createdBy:"forge",parentIds:["media-pack"],payload:{title:state.mission.seoTitle}})}},
  {at:92000,run(){event("archive","Accounts ready",""+(Object.keys(state.mission.credentials).length?Object.keys(state.mission.credentials).length+" cabinets authenticated":"6 profiles registered for first use")+" · sessions stored in vault.","green");agent("archive","working","storing portal sessions","registry");sealArtifact({baseId:"portal-accounts",type:"portal_credentials",label:"PORTAL ACCOUNTS",createdBy:"archive",parentIds:["seller-brief"],payload:{provided:Object.keys(state.mission.credentials).length,registered:state.mission.portals.length-Object.keys(state.mission.credentials).length}})}},
@@ -172,26 +172,30 @@ function renderMissionInput(){
  $("#sumPortals").textContent=m.portals.length+" PORTALS";
  $("#sumMandatory").textContent=m.mandatory.length+" MANDATORY FIELDS";
  $("#portalMetric").textContent=String(m.portals.length).padStart(2,"0");
- $("#missionTitle").textContent="Publish "+m.seller.name.split(" ")[0]+"'s property on "+m.portals.length+" portals";
+ $("#missionTitle").textContent=(m.seller.title||"Property listing").slice(0,70)+" · "+m.portals.length+" portals";
  $("#missionSub").textContent="Register accounts, write SEO listings, audit, publish, and verify live links.";
 }
+function readPhotos(){return [...document.querySelectorAll(".photo-item")].map((el,i)=>({name:el.dataset.name||"photo-"+(i+1),priority:i+1}));}
+function renderPhotos(photos){const list=$("#photoList");if(!list)return;list.innerHTML=(photos||[]).slice(0,20).map((p,i)=>`<div class="photo-item" draggable="true" data-name="${escapeHtml(p.name)}"><b>${i+1}</b><span>${escapeHtml(p.name)}</span><button type="button" aria-label="Remove photo">×</button></div>`).join("");list.querySelectorAll("button").forEach(b=>b.onclick=()=>{b.parentElement.remove();renumberPhotos()});list.querySelectorAll(".photo-item").forEach(el=>el.ondragstart=e=>e.dataTransfer.setData("text/plain",el.dataset.name));list.ondragover=e=>e.preventDefault();list.ondrop=e=>{e.preventDefault();const name=e.dataTransfer.getData("text/plain"),item=[...list.children].find(x=>x.dataset.name===name);if(item)list.append(item);renumberPhotos()};}
+function renumberPhotos(){document.querySelectorAll(".photo-item>b").forEach((b,i)=>b.textContent=i+1)}
+$("#inPhotos").onchange=e=>{const current=readPhotos(),incoming=[...e.target.files].slice(0,20-current.length).map(f=>({name:f.name,priority:0}));renderPhotos(current.concat(incoming));e.target.value=""};
 function loadSetupForm(){
  const m=state.mission;
- $("#inSeller").value=m.seller.name;$("#inPhone").value=m.seller.phone;$("#inPhoto").value=m.seller.photo;$("#inVideo").value=m.seller.video;$("#inDescription").value=m.seller.description;
+ $("#inSeller").value=m.seller.name||"";$("#inPhone").value=m.seller.phone||"";$("#inTitle").value=m.seller.title||m.seoTitle||"";$("#inVideo").value=m.seller.video||"";$("#inDescription").value=m.seller.description||"";renderPhotos(m.seller.photos||[]);
  $("#inPortals").value=m.portals.join("\n");
  const creds=Object.keys(m.credentials).map(p=>p+" | "+m.credentials[p].login+" | "+m.credentials[p].password).join("\n");
  $("#inCreds").value=creds;
- $("#inMandatory").value=m.mandatory.map(x=>x.label+" = "+x.value).join("\n");
+ document.querySelectorAll("[data-param]").forEach(input=>{const item=m.mandatory.find(x=>x.label===input.dataset.param);if(item)input.value=item.value});$("#inMandatory").value=m.mandatory.filter(x=>!document.querySelector(`[data-param="${CSS.escape(x.label)}"]`)).map(x=>x.label+" = "+x.value).join("\n");
 }
 function saveSetupForm(){
  const m=state.mission;
- m.seller={name:$("#inSeller").value.trim(),phone:$("#inPhone").value.trim(),photo:$("#inPhoto").value.trim(),description:$("#inDescription").value.trim(),video:$("#inVideo").value.trim()};
+ m.seller={name:$("#inSeller").value.trim(),phone:$("#inPhone").value.trim(),title:$("#inTitle").value.trim().slice(0,70),description:$("#inDescription").value.trim().slice(0,5000),video:$("#inVideo").value.trim(),photos:readPhotos()};
  m.portals=$("#inPortals").value.split(/\n+/).map(s=>s.trim()).filter(Boolean);
  if(!m.portals.length)m.portals=DEFAULT_MISSION.portals.slice();
  const creds={};
  $("#inCreds").value.split(/\n+/).forEach(line=>{const parts=line.split("|").map(s=>s.trim());if(parts.length>=2&&parts[0])creds[parts[0]]={login:parts[1],password:parts[2]||""}});
  m.credentials=creds;
- m.mandatory=$("#inMandatory").value.split(/\n+/).map(line=>{const i=line.indexOf("=");if(i<0)return null;return{label:line.slice(0,i).trim(),value:line.slice(i+1).trim()}}).filter(Boolean);
+ m.mandatory=[...document.querySelectorAll("[data-param]")].map(input=>({label:input.dataset.param,value:input.value.trim()})).filter(x=>x.value);m.mandatory.push(...$("#inMandatory").value.split(/\n+/).map(line=>{const i=line.indexOf("=");if(i<0)return null;return{label:line.slice(0,i).trim(),value:line.slice(i+1).trim()}}).filter(Boolean));
  m.seoTitle=generateSeoTitle();
  saveInput();renderMissionInput();
  event("system","Mission input saved","Seller brief, portal accounts, and mandatory fields loaded from your input.","green");
@@ -263,7 +267,7 @@ function pause(){
 function reset(announce=true){
  state.running=false;state.paused=false;state.approval=false;state.complete=false;state.rejected=false;state.elapsed=0;state.cursor=0;state.verifyCursor=0;state.artifacts=0;state.spend=0;state.mode="mission";state.publishedUrls=[];renderLinks();agents=initial.map(a=>({...a}));resetComms();
  $("#approvalIdle").hidden=false;$("#approvalRequest").hidden=true;$("#airlockMetric").textContent="CLEAR";$("#airlockMetric").style.color="";$("#spendMetric").textContent="$0.00";$("#portalMetric").textContent=String(state.mission.portals.length).padStart(2,"0");$("#riskBadge").textContent="LOW RISK";$("#riskBadge").style.color="";$("#startBtn").textContent="▶ Start listing";$("#pauseBtn").textContent="Ⅱ";
- stage(null,0,"Publish "+state.mission.seller.name.split(" ")[0]+"'s property on "+state.mission.portals.length+" portals","Register accounts, write SEO listings, audit, publish, and verify live links.");document.querySelectorAll("#stages span").forEach(n=>n.classList.remove("active","done"));renderRoster();select("helm");if(announce)event("system","Mission reset","All agents returned to their stations; the six-minute clock is ready.","amber");
+ stage(null,0,(state.mission.seller.title||"Property listing").slice(0,70)+" · "+state.mission.portals.length+" portals","Register accounts, write SEO listings, audit, publish, and verify live links.");document.querySelectorAll("#stages span").forEach(n=>n.classList.remove("active","done"));renderRoster();select("helm");if(announce)event("system","Mission reset","All agents returned to their stations; the six-minute clock is ready.","amber");
  if(bridge&&announce)bridge.resetMission();
  if(ledger&&announce){artifactPackets.length=0;selectedArtifactId=null;ledgerCall("startMission","RE-042")}
 }
@@ -296,14 +300,14 @@ function details(z,active){
  if(z.type==="verify"){ctx.fillStyle="#231f2e";ctx.fillRect(z.x+22,z.y+48,166,64);ctx.strokeStyle="#5a4b6e";ctx.lineWidth=2;ctx.strokeRect(z.x+28,z.y+54,154,52);for(let i=0;i<5;i++){ctx.fillStyle="#383243";ctx.fillRect(z.x+38,z.y+60+i*9,36,5);ctx.fillStyle=active?C.green:"#5a6a55";ctx.fillRect(z.x+78,z.y+61+i*9,5,4)}}
 }
 function core(){
- const p=points.core,pulse=5+Math.sin(performance.now()/350)*2;ctx.fillStyle="#4ee7e20f";ctx.beginPath();ctx.arc(p.x,p.y,64+pulse,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#24424b";ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,48,0,Math.PI*2);ctx.stroke();ctx.setLineDash([3,6]);ctx.strokeStyle=C.cyan;ctx.beginPath();ctx.arc(p.x,p.y,36,performance.now()/1200,performance.now()/1200+Math.PI*1.5);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#0d171d";ctx.beginPath();ctx.arc(p.x,p.y,25,0,Math.PI*2);ctx.fill();ctx.fillStyle=C.cyan;ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillText("EVENT",p.x,p.y-2);ctx.fillText("CORE",p.x,p.y+10);ctx.textAlign="left";
+ const p=points.core,pulse=5+Math.sin(performance.now()/350)*2;ctx.fillStyle="#4ee7e20f";ctx.beginPath();ctx.arc(p.x,p.y,64+pulse,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#24424b";ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,48,0,Math.PI*2);ctx.stroke();ctx.setLineDash([3,6]);ctx.strokeStyle=C.cyan;ctx.beginPath();ctx.arc(p.x,p.y,36,performance.now()/1200,performance.now()/1200+Math.PI*1.5);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#0d171d";ctx.beginPath();ctx.arc(p.x,p.y,25,0,Math.PI*2);ctx.fill();ctx.fillStyle=C.cyan;ctx.font="bold 9px monospace";ctx.textAlign="center";ctx.fillText("V SHARK",p.x,p.y+3);ctx.font="12px sans-serif";ctx.fillText("🦈",p.x,p.y+20);ctx.textAlign="left";
 }
 function room(){
  ctx.fillStyle="#0b0b0a";ctx.fillRect(0,0,900,540);
  ctx.fillStyle="#12110f";ctx.fillRect(0,0,900,108);ctx.fillStyle="#2b2118";ctx.fillRect(0,101,900,8);
  ctx.strokeStyle="#241e18";ctx.lineWidth=1;for(let y=109;y<540;y+=22){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(900,y);ctx.stroke()}for(let x=0;x<900;x+=70){ctx.beginPath();ctx.moveTo(x,109);ctx.lineTo(x+25,540);ctx.stroke()}
  drawWindow(24,18,142,58);drawWindow(180,18,142,58);drawWallMonitor(345,16,250,67);drawClock(746,45);
- ctx.fillStyle="#080908";ctx.fillRect(0,88,900,13);ctx.fillStyle="#77736a";ctx.font="bold 7px monospace";ctx.fillText("ESTATE OPS $PUBLISH · ONE HUMAN · SEVEN BOTS · FLOOR STATUS: NOMINAL",25,97);
+ ctx.fillStyle="#080908";ctx.fillRect(0,88,900,13);ctx.fillStyle="#77736a";ctx.font="bold 7px monospace";ctx.fillText("V SHARK 🦈 · ONE HUMAN · SEVEN AGENTS · FLOOR STATUS: NOMINAL",25,97);
  [165,455,740].forEach(x=>{ctx.fillStyle="#d7c28b10";ctx.beginPath();ctx.moveTo(x-13,109);ctx.lineTo(x-82,320);ctx.lineTo(x+82,320);ctx.closePath();ctx.fill();ctx.fillStyle="#6c5c3b";ctx.fillRect(x-17,106,34,5)});
  ctx.fillStyle="#15130f";ctx.fillRect(280,260,350,65);ctx.strokeStyle="#37312a";ctx.strokeRect(280,260,350,65);
  ctx.fillStyle="#746958";ctx.font="bold 8px monospace";ctx.fillText("COMMON HANDOFF FLOOR",290,274);
@@ -334,8 +338,11 @@ function plant(x,y){ctx.fillStyle="#4a3524";ctx.fillRect(x-9,y+22,18,16);ctx.fil
 function drawAgent(a){
  const x=Math.round(a.x),y=Math.round(a.y),moving=Math.hypot(a.tx-a.x,a.ty-a.y)>2,stride=moving?(Math.sin(performance.now()/95+a.x)>.0?2:-2):0;
  ctx.globalAlpha=.14;ctx.fillStyle=a.color;ctx.fillRect(x-18,y+20,36,4);ctx.globalAlpha=1;
- ctx.fillStyle=a.color;ctx.fillRect(x-9,y-20,18,3);ctx.fillRect(x-13,y-17,26,5);ctx.fillRect(x-16,y-12,32,24);
- ctx.fillRect(x-16+stride,y+12,7,8);ctx.fillRect(x-4,y+12,8,6);ctx.fillRect(x+9-stride,y+12,7,8);
+ // Office-suited agent silhouette: jacket, white shirt, tie and trousers.
+ ctx.fillStyle="#202b35";ctx.fillRect(x-9,y-20,18,3);ctx.fillRect(x-13,y-17,26,5);ctx.fillStyle="#263746";ctx.fillRect(x-16,y-12,32,24);
+ ctx.fillStyle="#e9eee8";ctx.beginPath();ctx.moveTo(x-7,y-12);ctx.lineTo(x,y-5);ctx.lineTo(x+7,y-12);ctx.lineTo(x+5,y+4);ctx.lineTo(x-5,y+4);ctx.closePath();ctx.fill();
+ ctx.fillStyle=a.color;ctx.beginPath();ctx.moveTo(x-2,y-8);ctx.lineTo(x+2,y-8);ctx.lineTo(x+3,y+7);ctx.lineTo(x,y+10);ctx.lineTo(x-3,y+7);ctx.closePath();ctx.fill();
+ ctx.fillStyle="#18232d";ctx.fillRect(x-16+stride,y+12,7,8);ctx.fillRect(x-4,y+12,8,6);ctx.fillRect(x+9-stride,y+12,7,8);
  ctx.fillStyle="#101010";ctx.fillRect(x-9,y-8,5,7);ctx.fillRect(x+4,y-8,5,7);
  if(moving){ctx.globalAlpha=.4;ctx.fillStyle=a.color;for(let i=0;i<5;i++)ctx.fillRect(x-23-i*7,y+12+(i%2)*3,2,2);ctx.globalAlpha=1}
  const status=a.state==="waiting approval"?C.red:a.state==="complete"?C.green:a.state==="idle"?"#555":a.color;ctx.fillStyle=status;ctx.fillRect(x+16,y-19,5,5);
@@ -410,7 +417,7 @@ $("#startBtn").onclick=start;$("#pauseBtn").onclick=pause;$("#resetBtn").onclick
 window.onkeydown=e=>{if(e.code==="Space"&&e.target.tagName!=="BUTTON"){e.preventDefault();state.running?pause():start()}if(e.key.toLowerCase()==="r")reset()};
 bindLedger();
 bindTransport();
-renderRoster();renderMissionInput();resize();select("helm");stage(null,0,"Publish "+state.mission.seller.name.split(" ")[0]+"'s property on "+state.mission.portals.length+" portals","Register accounts, write SEO listings, audit, publish, and verify live links.");document.querySelectorAll("#stages span").forEach(n=>n.classList.remove("active","done"));
+renderRoster();renderMissionInput();resize();select("helm");stage(null,0,(state.mission.seller.title||"Property listing").slice(0,70)+" · "+state.mission.portals.length+" portals","Register accounts, write SEO listings, audit, publish, and verify live links.");document.querySelectorAll("#stages span").forEach(n=>n.classList.remove("active","done"));
 event("system","Station online","Room telemetry, pathing, and the six-minute listing clock are live.","green");event("vault","Portal registry mounted","Portal account list and credential vault are ready for the seller brief.","cyan");event("airlock","Safety boundary armed","Listing publication requires one operator decision.","amber");
 clock();setInterval(clock,1000);requestAnimationFrame(tick);
 const autoplay=new URLSearchParams(location.search).get("autoplay");
