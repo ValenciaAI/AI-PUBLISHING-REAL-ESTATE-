@@ -159,3 +159,26 @@ body{background-color:#061020;background-image:linear-gradient(#0c2940 1px,trans
 .photo-preview{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:6px;max-height:145px;overflow:auto}.photo-tile{position:relative;min-height:55px;padding:3px;border:1px solid #22536c;background:#061426;cursor:grab}.photo-tile img,.photo-placeholder{display:block;width:100%;height:34px;object-fit:cover;background:#0c3048}.photo-placeholder{display:grid;place-items:center;color:#48dbe4;font-size:8px}.photo-tile b{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#acd8de;font-size:6px;font-weight:normal}.photo-tile button{position:absolute;right:1px;top:1px;border:0;background:#061426cc;color:#ff6c7e;font-size:12px;line-height:13px;cursor:pointer}.photo-rank{position:absolute;left:2px;bottom:14px;z-index:1;padding:1px 3px;background:#061426dd;color:#eaffff;font-size:7px}
 .setup-grid{max-height:68vh}.setup fieldset:first-child{grid-column:1}.setup fieldset.mandatory{grid-column:2;grid-row:1 / span 2}
 @media(max-width:700px){.setup fieldset.mandatory{grid-column:auto;grid-row:auto}.photo-preview{grid-template-columns:repeat(4,1fr)}}
+
+/* SUPPLIED REFERENCE FRAME — fixed command-dashboard composition */
+@media(min-width:901px){
+ html,body{background:#061425;overflow:hidden}
+ .app{padding:5px;width:100vw;height:100dvh;gap:0}
+ .topbar{flex:0 0 50px;height:50px;min-height:50px;grid-template-columns:minmax(390px,1fr) 220px auto 185px;border:1px solid #1b6b8d;background:linear-gradient(180deg,#09223a,#061426);box-shadow:0 0 20px #0a8cad55,inset 0 0 25px #14769c26}
+ .brand{padding:5px 14px;gap:10px}.brand-mark{width:37px;height:37px}.brand h1{font-size:20px;letter-spacing:.04em}.brand span{font-size:6px}
+ .creator-tag{margin:4px 8px;border-color:#1b86a4;background:#0a2941;box-shadow:inset 3px 0 #18e6fa,0 0 13px #16e7ff33}.creator-tag strong{font-size:14px;color:#8ff7ff}.creator-tag small{font-size:5px}
+ .metrics{height:40px;border-color:#18516e}.metrics>div{min-width:75px;padding:5px 11px;border-color:#18516e}.metrics span,.clock span,.clock small{font-size:6px}.metrics b{font-size:10px;color:#94e6ef}.clock{padding:0 12px}.clock b{font-size:15px;color:#9cecf4}
+ .grid{margin-top:5px;gap:5px;grid-template-columns:minmax(0,1fr) 246px;grid-template-rows:185px minmax(0,1fr) 111px}
+ .panel{border-color:#1a6481;background:linear-gradient(145deg,#081b30f5,#061326fa);box-shadow:0 0 18px #08728e30,inset 0 0 22px #0d62801a}
+ .station-head{min-height:48px;height:48px;padding:7px 12px;border-color:#164f6a}.station-head h2{font-size:13px}.station-head span{font-size:6px}
+ .controls{gap:4px}.controls button,.controls select{height:29px;font-size:7px}.controls .primary{width:96px}
+ .canvas-wrap{min-height:0;background:#061326}
+ .roster .panel-head{height:43px;min-height:43px;padding:7px 10px}.roster .panel-head span{font-size:6px}.roster .panel-head h2{font-size:11px}.roster .panel-head>b{font-size:6px;padding:4px}
+ .roster .agent-list{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(4,38px);gap:3px;padding:5px}.roster .agent-card{min-height:38px;padding:5px 3px 3px 30px;border-color:#15506b}.roster .avatar{left:5px;top:7px;width:20px;height:20px}.roster .avatar:before{top:13px;height:9px}.roster .avatar:after{left:8px;top:5px;width:4px;height:4px}.roster .agent-head b{font-size:6.5px}.roster .agent-head span{font-size:4px}
+ .feed .panel-head{height:47px;min-height:47px;padding:8px 10px}.feed .panel-head h2{font-size:12px}.feed .events{padding:4px 8px}.feed .event{padding:7px 3px 7px 25px}.feed .event p{font-size:7px}.feed .event div b{font-size:6px}.feed .event time{font-size:5px}.feed-foot{min-height:28px;padding:6px 9px}
+ .mission{grid-template-columns:125px 1fr}.mission-id{padding:12px}.mission-id>b{font-size:15px;margin:5px 0 8px}.mission-main{padding:12px 15px}.mission-copy h2{font-size:11px}.mission-copy p{font-size:7px}.mission-copy>b{font-size:14px}.progress{margin-top:10px}.stages{margin-top:9px}.stages span{font-size:5.5px}.input-summary{margin-top:7px;padding:5px 8px;gap:7px}.input-summary b,.input-summary span,.input-summary em{font-size:6px}
+ .approval{min-height:111px}.airlock-idle{padding:12px;gap:12px}.airlock-icon{flex-basis:46px;width:46px;height:46px}.airlock-icon:before{width:60px}.airlock-icon:after{height:60px}.airlock-icon i{width:18px;height:18px}.airlock-idle span{font-size:6px}.airlock-idle h2{font-size:12px}.airlock-idle p{font-size:6px}
+ .ledger-mini{left:12px;top:11px;width:145px;padding:8px 9px 8px 15px}.ledger-mini b{font-size:9px}.ledger-mini em,.ledger-mini span{font-size:6px}
+ .comm-panel{left:12px;top:74px;width:215px}.link-panel{right:12px;top:74px;width:220px}
+ .artifact-flow{min-width:460px;bottom:8px;height:43px}.artifact-flow>span{min-width:61px;height:29px}.artifact-flow>span b{font-size:6px}
+}
