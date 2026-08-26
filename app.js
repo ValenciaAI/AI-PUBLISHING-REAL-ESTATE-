@@ -1,7 +1,6 @@
 (() => {
 "use strict";
 const $=s=>document.querySelector(s), canvas=$("#stationCanvas"), ctx=canvas.getContext("2d");
-const robotHead=new Image();robotHead.src="robot-head.png";
 const C={helm:"#ff355f",forge:"#ffb52e",sentinel:"#b94cff",scout:"#38ff4b",archive:"#16e7ff",relay:"#2489ff",warden:"#ef38ff",green:"#45ff64",amber:"#ffb52e",red:"#ff355f",cyan:"#16e7ff",muted:"#647892"};
 const bridge=window.portalLink||null;
 const ledger=window.listingLedger||null,artifactPackets=[],commSignals=[];
@@ -327,20 +326,30 @@ function room(){
  ctx.fillStyle="#071a2d";ctx.fillRect(706,210,168,130);ctx.strokeStyle="#2081a0";ctx.strokeRect(706,210,168,130);ctx.fillStyle="#72e6ed";ctx.font="bold 8px monospace";ctx.fillText("LIVE OPERATIONS",718,225);ctx.fillStyle="#86cdd7";ctx.font="7px monospace";ctx.fillText("AGENTS: 7",718,245);ctx.fillText("UTILIZATION: 84%",718,260);ctx.fillText("PORTALS: 06",718,275);
 }
 function drawHologramHead(){
- const t=performance.now()/1000,cx=450,cy=300;
- if(robotHead.complete&&robotHead.naturalWidth){ctx.save();ctx.globalAlpha=.95;ctx.globalCompositeOperation="screen";ctx.drawImage(robotHead,285,112,330,420);ctx.globalAlpha=1;ctx.restore();return}
+ const now=performance.now(),t=now/1000,cx=450,base=494,cy=300;
  ctx.save();ctx.globalCompositeOperation="lighter";
- // projector rings
- for(let r=72;r<112;r+=12){ctx.strokeStyle=`rgba(32,236,255,${.14-(r-72)/500})`;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(cx,cy+111,r,9,0,0,Math.PI*2);ctx.stroke()}
- ctx.strokeStyle="#24efff55";ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy+15,83,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy+15,96,0,Math.PI*2);ctx.stroke();
- // luminous head silhouette
- const grad=ctx.createRadialGradient(cx,cy-20,8,cx,cy-20,95);grad.addColorStop(0,"#e8ffff");grad.addColorStop(.23,"#83f8ff");grad.addColorStop(.7,"#1ccfe9aa");grad.addColorStop(1,"#0a6c9a11");ctx.fillStyle=grad;ctx.beginPath();ctx.ellipse(cx,cy-34,65,91,0,0,Math.PI*2);ctx.fill();
- ctx.strokeStyle="#a4ffff";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(cx,cy-34,65,91,0,0,Math.PI*2);ctx.stroke();
- // face contours and scan lines
- ctx.strokeStyle="#d4ffffaa";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cx-34,cy-73);ctx.quadraticCurveTo(cx,cy-102,cx+34,cy-73);ctx.moveTo(cx-48,cy-37);ctx.quadraticCurveTo(cx-25,cy-54,cx-8,cy-38);ctx.moveTo(cx+8,cy-38);ctx.quadraticCurveTo(cx+25,cy-54,cx+48,cy-37);ctx.moveTo(cx,cy-29);ctx.lineTo(cx-8,cy+10);ctx.lineTo(cx+10,cy+13);ctx.moveTo(cx-27,cy+36);ctx.quadraticCurveTo(cx,cy+55,cx+27,cy+36);ctx.stroke();
- ctx.fillStyle="#eaffff";ctx.shadowColor="#28f4ff";ctx.shadowBlur=14;ctx.fillRect(cx-39,cy-44,20,5);ctx.fillRect(cx+19,cy-44,20,5);ctx.shadowBlur=0;
- ctx.strokeStyle="#4ff7ff88";for(let i=-70;i<65;i+=11){ctx.beginPath();ctx.moveTo(cx-60,cy+i);ctx.lineTo(cx+60,cy+i+Math.sin(t*2+i)*2);ctx.stroke()}
- ctx.fillStyle="#a9ffff";ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillText("NEURAL COMMAND CORE",cx,cy+125);ctx.textAlign="left";ctx.restore();
+ // Projector rings and volumetric light, all drawn natively on canvas.
+ const pulse=1+Math.sin(t*2)*.035;
+ ctx.fillStyle="#16e7ff12";ctx.beginPath();ctx.ellipse(cx,base,118,18,0,0,Math.PI*2);ctx.fill();
+ for(let i=0;i<5;i++){ctx.strokeStyle=`rgba(105,250,255,${.55-i*.08})`;ctx.lineWidth=i===0?2:1;ctx.beginPath();ctx.ellipse(cx,base,64+i*15,8+i*2,0,0,Math.PI*2);ctx.stroke()}
+ ctx.strokeStyle="#a4ffff66";ctx.beginPath();ctx.arc(cx,base-72,105,Math.PI*1.08,Math.PI*1.92);ctx.stroke();
+ // shoulders / translucent neck
+ const body=ctx.createLinearGradient(0,390,0,515);body.addColorStop(0,"#61faff66");body.addColorStop(.6,"#19cfe944");body.addColorStop(1,"#0b607d05");ctx.fillStyle=body;ctx.beginPath();ctx.moveTo(cx-48,390);ctx.quadraticCurveTo(cx-68,430,cx-112,base);ctx.lineTo(cx+112,base);ctx.quadraticCurveTo(cx+68,430,cx+48,390);ctx.closePath();ctx.fill();
+ ctx.strokeStyle="#8dffffaa";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-45,387);ctx.lineTo(cx-52,455);ctx.lineTo(cx-93,base);ctx.moveTo(cx+45,387);ctx.lineTo(cx+52,455);ctx.lineTo(cx+93,base);ctx.stroke();
+ ctx.fillStyle="#38e7f433";ctx.fillRect(cx-25,385,50,100);ctx.strokeStyle="#b6ffff77";ctx.strokeRect(cx-25,385,50,100);
+ for(let y=394;y<480;y+=9){ctx.strokeStyle="#b5ffff55";ctx.beginPath();ctx.moveTo(cx-22,y);ctx.lineTo(cx+22,y);ctx.stroke()}
+ // Head volume
+ const head=ctx.createRadialGradient(cx-10,cy-65,12,cx,cy-50,116);head.addColorStop(0,"#d9ffff");head.addColorStop(.22,"#8efaff");head.addColorStop(.62,"#30dcecbb");head.addColorStop(1,"#08799c12");ctx.fillStyle=head;ctx.beginPath();ctx.ellipse(cx,cy-58,72,110,0,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle="#c4ffff";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(cx,cy-58,72,110,0,0,Math.PI*2);ctx.stroke();
+ // smooth robotic shell contours
+ ctx.strokeStyle="#dcffff99";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(cx-48,cy-137);ctx.quadraticCurveTo(cx,cy-168,cx+48,cy-137);ctx.moveTo(cx-61,cy-107);ctx.lineTo(cx-49,cy-65);ctx.lineTo(cx-56,cy-15);ctx.moveTo(cx+61,cy-107);ctx.lineTo(cx+49,cy-65);ctx.lineTo(cx+56,cy-15);ctx.moveTo(cx-53,cy+18);ctx.lineTo(cx-38,cy+72);ctx.lineTo(cx-15,cy+91);ctx.moveTo(cx+53,cy+18);ctx.lineTo(cx+38,cy+72);ctx.lineTo(cx+15,cy+91);ctx.stroke();
+ // eyes, nose, mouth
+ ctx.shadowColor="#bfffff";ctx.shadowBlur=16;ctx.fillStyle="#e8ffff";ctx.fillRect(cx-45,cy-82,27,6);ctx.fillRect(cx+18,cy-82,27,6);ctx.shadowBlur=0;
+ ctx.strokeStyle="#d9ffff";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-48,cy-79);ctx.quadraticCurveTo(cx-32,cy-96,cx-16,cy-79);ctx.moveTo(cx+16,cy-79);ctx.quadraticCurveTo(cx+32,cy-96,cx+48,cy-79);ctx.moveTo(cx,cy-72);ctx.lineTo(cx-9,cy-13);ctx.lineTo(cx+10,cy-9);ctx.moveTo(cx-29,cy+34);ctx.quadraticCurveTo(cx,cy+48,cx+29,cy+34);ctx.stroke();
+ ctx.fillStyle="#efffff";ctx.fillRect(cx-3,cy-79,6,6);ctx.fillRect(cx+31,cy-79,6,6);
+ // moving scan lines create the hologram effect
+ ctx.globalAlpha=.23;ctx.strokeStyle="#efffff";for(let y=-155;y<58;y+=10){const yy=cy+y+((now/10)%10);ctx.beginPath();ctx.moveTo(cx-67,yy);ctx.lineTo(cx+67,yy);ctx.stroke()}ctx.globalAlpha=1;
+ ctx.fillStyle="#aefeff";ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillText("NEURAL COMMAND CORE",cx,base+27);ctx.textAlign="left";ctx.restore();
 }
 function drawWindow(x,y,w,h){const now=performance.now();ctx.fillStyle="#06111f";ctx.fillRect(x,y,w,h);ctx.strokeStyle="#1d526d";ctx.strokeRect(x,y,w,h);ctx.fillStyle="#d8d8d0";ctx.beginPath();ctx.arc(x+w-24,y+18,8,0,Math.PI*2);ctx.fill();for(let i=0;i<24;i++){const bx=x+6+(i*37%(w-12)),bh=5+(i*11%23),lit=Math.sin(now/650+i*2.7)>.22;ctx.fillStyle=lit?(i%4?"#1b7991":"#d7e76a"):"#12324a";ctx.fillRect(bx,y+h-bh-4,3,bh)}}
 function drawWallMonitor(x,y,w,h){const now=performance.now(),phase=now/720;ctx.fillStyle="#06111f";ctx.fillRect(x,y,w,h);ctx.strokeStyle="#1d526d";ctx.strokeRect(x,y,w,h);ctx.strokeStyle="#16405b";ctx.lineWidth=1;for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(x+8,y+15+i*11);ctx.lineTo(x+w-8,y+15+i*11);ctx.stroke()}ctx.save();ctx.beginPath();ctx.rect(x+8,y+17,w-16,h-22);ctx.clip();ctx.strokeStyle="#29e6db";ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<28;i++){const px=x+9+i*9-(now/70%9),py=y+43-Math.sin(i*.63+phase)*10-Math.sin(i*.19+phase*.45)*7;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.stroke();ctx.strokeStyle="#ff4769";ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<28;i++){const px=x+9+i*9-(now/105%9),py=y+49-Math.cos(i*.48+phase*.72)*8;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.stroke();ctx.fillStyle="#45ff64";ctx.fillRect(x+10+(now/9%(w-25)),y+21,2,38);ctx.restore();ctx.fillStyle="#72d9e7";ctx.font="7px monospace";ctx.fillText("FLOOR MONITOR / PUBLISH THROUGHPUT",x+10,y+13)}
