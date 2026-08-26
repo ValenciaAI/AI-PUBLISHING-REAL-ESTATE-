@@ -12,7 +12,7 @@ const DEFAULT_MISSION={
  credentials:{},
  mandatory:[{label:"Cena",value:"4500000 zł"},{label:"Cena za m²",value:"1974 zł / m2"},{label:"Województwo",value:"lubuskie"},{label:"Powiat",value:"słubicki"},{label:"Miasto / Gmina",value:"Ośno Lubuskie"},{label:"Kod pocztowy",value:"69-220"},{label:"Dzielnica / Wieś",value:"Dolina Leśna"},{label:"Ulica",value:"Dolina Leśna"},{label:"Rynek",value:"Wtórny"},{label:"Rodzaj nieruchomości",value:"obiekt"},{label:"Powierzchnia użytkowa",value:"2280 m2"},{label:"Przeznaczenie",value:"handlowy"},{label:"Liczba pomieszczeń",value:"80"},{label:"Media",value:"prąd, woda, ciepła woda własna, gaz, telefon, internet, TV kablowa"}]
 };
-function loadInput(){try{const s=JSON.parse(localStorage.getItem(INPUT_KEY)||"null");if(s&&s.seller)return {...JSON.parse(JSON.stringify(DEFAULT_MISSION)),...s,seller:{...DEFAULT_MISSION.seller,...s.seller}}}catch{}return JSON.parse(JSON.stringify(DEFAULT_MISSION))}
+function loadInput(){try{const s=JSON.parse(localStorage.getItem(INPUT_KEY)||"null");if(s&&s.seller){const fresh=!s.seller.title;return fresh?JSON.parse(JSON.stringify(DEFAULT_MISSION)):{...JSON.parse(JSON.stringify(DEFAULT_MISSION)),...s,seller:{...DEFAULT_MISSION.seller,...s.seller}}}}catch{}return JSON.parse(JSON.stringify(DEFAULT_MISSION))}
 function saveInput(){try{localStorage.setItem(INPUT_KEY,JSON.stringify(state.mission))}catch{}}
 const state={running:false,paused:false,approval:false,complete:false,rejected:false,elapsed:0,duration:360000,last:performance.now(),cursor:0,verifyCursor:0,speed:1,count:0,spend:0,artifacts:0,particles:[],selected:"helm",ambientAt:performance.now()+1800,mode:"mission",publishedUrls:[],mission:loadInput()};
 state.mission.seoTitle=generateSeoTitleSafe();
@@ -331,7 +331,7 @@ function desk(z){
 function meetingTable(){
  const p=points.core;ctx.fillStyle="#191511";ctx.fillRect(p.x-82,p.y-33,164,62);ctx.strokeStyle="#51402e";ctx.strokeRect(p.x-82,p.y-33,164,62);ctx.fillStyle="#3b2c20";ctx.fillRect(p.x-72,p.y-23,144,42);
  ctx.fillStyle="#d3ccba";ctx.fillRect(p.x-22,p.y-17,18,25);ctx.fillStyle="#918b80";ctx.fillRect(p.x+4,p.y-13,22,21);
- ctx.fillStyle="#9f8b57";ctx.font="bold 7px monospace";ctx.textAlign="center";ctx.fillText("HANDOFF TABLE",p.x,p.y+20);ctx.textAlign="left";
+ ctx.fillStyle="#9f8b57";ctx.font="bold 7px monospace";ctx.textAlign="center";ctx.fillText("V SHARK · AGENT FLOOR",p.x,p.y+20);ctx.textAlign="left";
 }
 function serverRack(x,y){ctx.fillStyle="#101415";ctx.fillRect(x-22,y,32,145);ctx.strokeStyle="#333b3b";ctx.strokeRect(x-22,y,32,145);for(let i=0;i<11;i++){ctx.fillStyle=i%3===0?C.green:"#263232";ctx.fillRect(x-16,y+8+i*12,4,3);ctx.fillStyle="#343b3c";ctx.fillRect(x-7,y+8+i*12,10,3)}}
 function plant(x,y){ctx.fillStyle="#4a3524";ctx.fillRect(x-9,y+22,18,16);ctx.fillStyle="#314b32";ctx.fillRect(x-3,y,6,25);ctx.fillRect(x-14,y+4,12,6);ctx.fillRect(x+2,y+8,14,6);ctx.fillRect(x-10,y-5,9,8)}
@@ -379,7 +379,7 @@ function interactions(){
  agents.forEach(a=>{if(a.state==="working"||a.state==="reviewing"){ctx.fillStyle="#080908e8";ctx.fillRect(a.x-15,a.y-37,30,11);ctx.fillStyle=a.color;for(let i=0;i<3;i++)ctx.fillRect(a.x-7+i*7,a.y-33,3,3)}});
  for(let i=0;i<agents.length;i++)for(let j=i+1;j<agents.length;j++){const a=agents[i],b=agents[j],d=Math.hypot(a.x-b.x,a.y-b.y);if(d<122&&(a.zone==="core"||b.zone==="core")){const x=(a.x+b.x)/2,y=Math.min(a.y,b.y)-43,t=(performance.now()/1100)%1,px=a.x+(b.x-a.x)*t,py=a.y-15+(b.y-a.y)*t;ctx.strokeStyle="#8b8069";ctx.setLineDash([2,4]);ctx.beginPath();ctx.moveTo(a.x,a.y-15);ctx.lineTo(b.x,b.y-15);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#e0cf8a";ctx.fillRect(px-3,py-3,6,6);ctx.fillStyle="#080908";ctx.fillRect(x-31,y,62,13);ctx.fillStyle="#d2c598";ctx.font="bold 7px monospace";ctx.textAlign="center";ctx.fillText("LIVE HANDOFF",x,y+9);ctx.textAlign="left"}}
 }
-function draw(){const w=canvas.clientWidth,h=canvas.clientHeight;ctx.clearRect(0,0,w,h);const t=transform();ctx.save();ctx.translate(t.ox,t.oy);ctx.scale(t.s,t.s);room();furniture();particles();drawCommSignals();drawArtifactPackets();agents.forEach(drawAgent);interactions();ctx.restore()}
+function draw(){const w=canvas.clientWidth,h=canvas.clientHeight;ctx.clearRect(0,0,w,h);const t=transform();ctx.save();ctx.translate(t.ox,t.oy);ctx.scale(t.s,t.s);room();connectors();furniture();core();particles();drawCommSignals();drawArtifactPackets();agents.forEach(drawAgent);interactions();ctx.restore()}
 function tick(now){
  const dt=Math.min(40,now-state.last);state.last=now;
  if(state.running&&!state.approval){
