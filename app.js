@@ -7,7 +7,7 @@ const ledger=window.listingLedger||null,artifactPackets=[],commSignals=[];
 let selectedArtifactId=null,ledgerToastTimer=null,commSequence=0;
 const INPUT_KEY="estate-ops.input.v1";
 const DEFAULT_MISSION={
- seller:{name:"Anna Kowalska",phone:"+48 601 234 567",photo:"photo_apartment.jpg",description:"Bright 2-room flat with a balcony, parking spot and a quiet neighbourhood.",video:"https://www.youtube.com/watch?v=RE-APARTMENT-TOUR"},
+ seller:{name:"Anna Kowalska",phone:"+48 601 234 567",photo:"photo_apartment.jpg",photos:[],title:"Sprzedam bezpośrednio Hotel i Restauracja Dolina Leśna",description:"Bright 2-room flat with a balcony, parking spot and a quiet neighbourhood.",video:"https://www.youtube.com/watch?v=RE-APARTMENT-TOUR"},
  portals:["OLX","Otodom","Morizon","Gratka","Domiporta","Nieruchomosci.pl"],
  credentials:{},
  mandatory:[{label:"Price",value:"449 000 PLN"},{label:"Area",value:"48 m²"},{label:"Rooms",value:"2"},{label:"Floor",value:"3/5"},{label:"Address",value:"ul. Kwiatowa 5, Warszawa"},{label:"Energy class",value:"C"},{label:"Balcony",value:"Yes"}]
@@ -39,7 +39,8 @@ let agents=initial.map(a=>({...a}));
 const stages=["intake","register","content","compliance","publish","verify"];
 function generateSeoTitleSafe(){try{return generateSeoTitle()}catch{return "2-room flat 48 m² · balcony · Warszawa"}}
 function generateSeoTitle(){
- const m=state.mission,f=(re,fb)=>{const x=m.mandatory.find(k=>re.test(k.label));return x?x.value:fb};
+ const m=state.mission;if(m.seller.title)return m.seller.title;
+  const f=(re,fb)=>{const x=m.mandatory.find(k=>re.test(k.label));return x?x.value:fb};
  const rooms=f(/room|pokoj|комн/i,"2"),area=f(/area|powierzchn|площадь/i,"48 m²"),city=f(/city|miasto|город/i,"Warszawa");
  return rooms+"-room flat "+area+" · balcony · "+city+" — quick sale";
 }
@@ -172,12 +173,22 @@ function renderMissionInput(){
  $("#sumPortals").textContent=m.portals.length+" PORTALS";
  $("#sumMandatory").textContent=m.mandatory.length+" MANDATORY FIELDS";
  $("#portalMetric").textContent=String(m.portals.length).padStart(2,"0");
- $("#missionTitle").textContent="Publish "+m.seller.name.split(" ")[0]+"'s property on "+m.portals.length+" portals";
+ $("#missionTitle").textContent=m.seller.title||("Publish "+m.seller.name.split(" ")[0]+"'s property on "+m.portals.length+" portals");
  $("#missionSub").textContent="Register accounts, write SEO listings, audit, publish, and verify live links.";
 }
+let pendingPhotos=[];
+function renderPhotoPreview(){
+ const box=$("#photoPreview");if(!box)return;
+ box.innerHTML=pendingPhotos.map((photo,i)=>`<div class="photo-tile" draggable="true" data-photo="${i}"><span class="photo-rank">${i+1}</span>${photo.url?`<img src="${escapeHtml(photo.url)}" alt="">`:`<div class="photo-placeholder">IMG</div>`}<b>${escapeHtml(photo.name)}</b><button type="button" data-remove-photo="${i}" aria-label="Remove photo">×</button></div>`).join("");
+ box.querySelectorAll("[data-remove-photo]").forEach(b=>b.onclick=()=>{pendingPhotos.splice(Number(b.dataset.removePhoto),1);renderPhotoPreview()});
+ box.querySelectorAll(".photo-tile").forEach(tile=>{tile.ondragstart=e=>e.dataTransfer.setData("text/plain",tile.dataset.photo);tile.ondragover=e=>e.preventDefault();tile.ondrop=e=>{e.preventDefault();const from=Number(e.dataTransfer.getData("text/plain")),to=Number(tile.dataset.photo);if(from===to)return;const [item]=pendingPhotos.splice(from,1);pendingPhotos.splice(to,0,item);renderPhotoPreview()}});
+}
+function addPhotoFiles(files){[...files].filter(f=>f.type.startsWith("image/")).slice(0,20-pendingPhotos.length).forEach(file=>{const reader=new FileReader();reader.onload=()=>{pendingPhotos.push({name:file.name,url:reader.result});renderPhotoPreview()};reader.readAsDataURL(file)});}
+function bindPhotoUpload(){const input=$("#inPhotos"),drop=$("#photoDrop");if(!input||!drop)return;input.onchange=e=>addPhotoFiles(e.target.files);drop.onclick=()=>input.click();drop.ondragover=e=>{e.preventDefault();drop.classList.add("dragging")};drop.ondragleave=()=>drop.classList.remove("dragging");drop.ondrop=e=>{e.preventDefault();drop.classList.remove("dragging");addPhotoFiles(e.dataTransfer.files)}}
+
 function loadSetupForm(){
  const m=state.mission;
- $("#inSeller").value=m.seller.name;$("#inPhone").value=m.seller.phone;$("#inPhoto").value=m.seller.photo;$("#inVideo").value=m.seller.video;$("#inDescription").value=m.seller.description;
+ $("#inSeller").value=m.seller.name;$("#inPhone").value=m.seller.phone;$("#inTitle").value=m.seller.title||m.seoTitle||"";pendingPhotos=(m.seller.photos||[]).slice(0,20);renderPhotoPreview();updateFieldCounts();$("#inVideo").value=m.seller.video;$("#inDescription").value=m.seller.description;
  $("#inPortals").value=m.portals.join("\n");
  const creds=Object.keys(m.credentials).map(p=>p+" | "+m.credentials[p].login+" | "+m.credentials[p].password).join("\n");
  $("#inCreds").value=creds;
@@ -185,7 +196,7 @@ function loadSetupForm(){
 }
 function saveSetupForm(){
  const m=state.mission;
- m.seller={name:$("#inSeller").value.trim(),phone:$("#inPhone").value.trim(),photo:$("#inPhoto").value.trim(),description:$("#inDescription").value.trim(),video:$("#inVideo").value.trim()};
+ m.seller={name:$("#inSeller").value.trim(),phone:$("#inPhone").value.trim(),photos:pendingPhotos.slice(0,20),title:$("#inTitle").value.trim().slice(0,70),photo:(pendingPhotos[0]&&pendingPhotos[0].name)||"",description:$("#inDescription").value.trim(),video:$("#inVideo").value.trim()};
  m.portals=$("#inPortals").value.split(/\n+/).map(s=>s.trim()).filter(Boolean);
  if(!m.portals.length)m.portals=DEFAULT_MISSION.portals.slice();
  const creds={};
@@ -423,6 +434,8 @@ function bindTransport(){
  bridge.addEventListener("ack",e=>transportState("online",{sessionId:e.detail.sessionId,mode:e.detail.mode,rtt:e.detail.latency,queueDepth:bridge.snapshot().queueDepth}));
  bridge.connect().then(info=>event("grok","Mock transport connected","Persistent local session "+info.sessionId.split("_").pop().toUpperCase()+" is receiving commands and telemetry.","green")).catch(()=>transportState("offline"));
 }
+function updateFieldCounts(){const title=$("#inTitle"),desc=$("#inDescription");if($("#titleCount"))$("#titleCount").textContent=(title&&title.value.length)||0;if($("#descriptionCount"))$("#descriptionCount").textContent=(desc&&desc.value.length)||0}
+bindPhotoUpload();["#inTitle","#inDescription"].forEach(sel=>{const el=$(sel);if(el)el.addEventListener("input",updateFieldCounts)});updateFieldCounts();
 $("#startBtn").onclick=start;$("#pauseBtn").onclick=pause;$("#resetBtn").onclick=()=>reset();$("#setupBtn").onclick=()=>{loadSetupForm();$("#setupDialog").showModal()};$("#saveSetup").onclick=saveSetupForm;$("#speed").onchange=e=>{state.speed=Number(e.target.value);event("system","Timeline speed changed","System is running at "+state.speed+"×.","amber")};$("#approveBtn").onclick=()=>resolve(true);$("#rejectBtn").onclick=()=>resolve(false);$("#inspectBtn").onclick=()=>$("#inspectDialog").showModal();$("#clearFeed").onclick=()=>{$("#eventFeed").innerHTML="";state.count=0;$("#eventCount").textContent="00 EVENTS"};canvas.onclick=canvasClick;window.onresize=resize;if("ResizeObserver"in window)new ResizeObserver(resize).observe(canvas);
 window.onkeydown=e=>{if(e.code==="Space"&&e.target.tagName!=="BUTTON"){e.preventDefault();state.running?pause():start()}if(e.key.toLowerCase()==="r")reset()};
 bindLedger();

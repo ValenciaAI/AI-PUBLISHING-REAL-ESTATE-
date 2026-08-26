@@ -147,3 +147,15 @@ body{background-color:#061020;background-image:linear-gradient(#0c2940 1px,trans
 .comm-panel,.ledger-mini,.ledger-drawer,.link-panel,.artifact-flow{background:#061426f5;border-color:#1a6682;box-shadow:0 0 25px #001a2ecc}
 .mission-id>b,.mission-copy>b{color:var(--cyan)}
 .progress i{background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+
+/* Agent visual: office operators in suits */
+.avatar{clip-path:none;border-radius:50% 50% 45% 45%;width:29px;height:29px;background:var(--agent);box-shadow:0 0 12px color-mix(in srgb,var(--agent) 45%,transparent)}
+.avatar:before{content:"";position:absolute;left:4px;right:4px;top:18px;height:16px;background:#102b45;clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
+.avatar:after{content:"";position:absolute;left:12px;top:7px;width:5px;height:5px;background:#061326;border:0;box-shadow:0 0 0 1px #b5f5f1}
+.roster .avatar{border-radius:50%;width:22px;height:22px}.roster .avatar:before{left:3px;right:3px;top:14px;height:10px}.roster .avatar:after{left:9px;top:5px;width:4px;height:4px;box-shadow:0 0 0 1px #b5f5f1}
+.field-count{float:right;color:#55cddd;font-size:7px;font-weight:normal;letter-spacing:.04em}.field-count span{color:#e5ffff}
+#inPhotos{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.photo-drop{margin-top:5px;padding:15px 8px;border:1px dashed #257693;background:#081d31;color:#64cbd7;text-align:center;font-size:8px;cursor:pointer;transition:.2s}.photo-drop:hover,.photo-drop.dragging{border-color:#16e7ff;background:#0b3850;color:#e9ffff;box-shadow:0 0 14px #16e7ff33}
+.photo-preview{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:6px;max-height:145px;overflow:auto}.photo-tile{position:relative;min-height:55px;padding:3px;border:1px solid #22536c;background:#061426;cursor:grab}.photo-tile img,.photo-placeholder{display:block;width:100%;height:34px;object-fit:cover;background:#0c3048}.photo-placeholder{display:grid;place-items:center;color:#48dbe4;font-size:8px}.photo-tile b{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#acd8de;font-size:6px;font-weight:normal}.photo-tile button{position:absolute;right:1px;top:1px;border:0;background:#061426cc;color:#ff6c7e;font-size:12px;line-height:13px;cursor:pointer}.photo-rank{position:absolute;left:2px;bottom:14px;z-index:1;padding:1px 3px;background:#061426dd;color:#eaffff;font-size:7px}
+.setup-grid{max-height:68vh}.setup fieldset:first-child{grid-column:1}.setup fieldset.mandatory{grid-column:2;grid-row:1 / span 2}
+@media(max-width:700px){.setup fieldset.mandatory{grid-column:auto;grid-row:auto}.photo-preview{grid-template-columns:repeat(4,1fr)}}

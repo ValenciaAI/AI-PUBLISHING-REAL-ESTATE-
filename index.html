@@ -16,7 +16,7 @@
         <div><span>REAL ESTATE OPERATIONS</span><h1>ESTATE OPS $PUBLISH</h1></div>
         <b id=connectionBadge class="live connecting" data-mode=mock><i></i><span id=connectionText>LINKING</span></b>
       </div>
-      <a class="creator-tag" href="https://x.com/monokern" target="_blank" rel="noreferrer"><small>CONCEPT BY</small><strong>@MONOKERN</strong></a>
+      <div class="creator-tag"><small>CREATOR 07</small><strong>V SHARK 🦈</strong></div>
       <div class=metrics>
         <div><span>CREW</span><b>7 / 7</b></div>
         <div><span>PORTALS</span><b id=portalMetric>06</b></div>
@@ -127,9 +127,42 @@
         <legend>Seller brief</legend>
         <label>Name<input id="inSeller" type="text" value="Anna Kowalska"></label>
         <label>Phone<input id="inPhone" type="text" value="+48 601 234 567"></label>
-        <label>Photo file / path<input id="inPhoto" type="text" value="photo_apartment.jpg"></label>
+        <label>Title <small class="field-count"><span id="titleCount">0</span>/70</small><input id="inTitle" maxlength="70" type="text" value="Sprzedam bezpośrednio Hotel i Restauracja Dolina Leśna"></label>
+        <label>Photos <small class="field-count">up to 20 · drag to set priority</small><input id="inPhotos" type="file" accept="image/*" multiple><div id="photoDrop" class="photo-drop">Drop photos here or click to upload</div><div id="photoPreview" class="photo-preview"></div></label>
         <label>YouTube video URL<input id="inVideo" type="text" value="https://www.youtube.com/watch?v=RE-APARTMENT-TOUR"></label>
-        <label>Description<textarea id="inDescription" rows="3">Bright 2-room flat with a balcony, parking spot and a quiet neighbourhood.</textarea></label>
+        <label>Description <small class="field-count"><span id="descriptionCount">0</span>/5000</small><textarea id="inDescription" maxlength="5000" rows="7">Sprzedam bezpośrednio – bez pośredników i prowizji
+
+Hotel i Restauracja „Dolina Leśna”
+
+Kompleks hotelowo-restauracyjny o dużym potencjale inwestycyjnym i adaptacyjnym, położony na malowniczej działce.
+
+Obiekty i powierzchnie
+- Działka: 2,1487 ha (21 487 m²)
+- Zabudowa łącznie: ok. 2280 m²
+- Budynek hotelowy: 750 m²
+- Budynek restauracji: 1 200 m²
+- Budynek administracyjno-mieszkalny: 330 m²
+
+Hotel
+- 45 miejsc noclegowych w pokojach 1-, 2- i 3-osobowych
+- Każdy pokój wyposażony w TV oraz taras lub balkon
+
+Restauracja i przestrzenie eventowe
+- Sala restauracyjna na 120 osób
+- Bar
+- Duża sala kominkowa
+- Sala konferencyjna
+- Jacuzzi i sauna
+
+Media i infrastruktura
+- Wodociąg miejski
+- Własna oczyszczalnia ścieków
+- Światłowód 300 Mb/s
+- Instalacje solarne
+- Prąd 27 kW
+- Gaz
+
+Idealny obiekt na hotel, restaurację, centrum konferencyjne, ośrodek wypoczynkowy lub dalszy rozwój inwestycyjny.</textarea></label>
       </fieldset>
       <fieldset>
         <legend>Portals (one per line, from the Excel list)</legend>
@@ -144,13 +177,20 @@ Nieruchomosci.pl</textarea>
       </fieldset>
       <fieldset class="mandatory">
         <legend>Data that must appear in EVERY listing (label = value, one per line)</legend>
-        <textarea id="inMandatory" rows="7">Price = 449 000 PLN
-Area = 48 m²
-Rooms = 2
-Floor = 3/5
-Address = ul. Kwiatowa 5, Warszawa
-Energy class = C
-Balcony = Yes</textarea>
+        <textarea id="inMandatory" rows="14">Cena = 4500000 zł
+Cena za m² = 1974 zł / m2
+Województwo = lubuskie
+Powiat = słubicki
+Miasto / Gmina = Ośno Lubuskie
+Kod pocztowy = 69-220
+Dzielnica / Wieś = Dolina Leśna
+Ulica = Dolina Leśna
+Rynek = Wtórny
+Rodzaj nieruchomości = obiekt
+Powierzchnia użytkowa = 2280 m2
+Przeznaczenie = handlowy
+Liczba pomieszczeń = 80
+Media = prąd, woda, ciepła woda własna, gaz, telefon, internet, TV kablowa</textarea>
       </fieldset>
     </div>
     <footer><button value="close">Cancel</button><button id="saveSetup" class="primary">Save &amp; use for mission</button></footer>
