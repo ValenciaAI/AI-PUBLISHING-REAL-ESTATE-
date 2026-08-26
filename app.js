@@ -104,7 +104,7 @@ function event(actor,title,message,tone){
  const el=document.createElement("article"),time=new Intl.DateTimeFormat("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(new Date());
  el.className="event";el.style.setProperty("--tone",colors[tone]||C.cyan);
  el.innerHTML='<i></i><div><b>'+actor+'</b><time>'+time+'</time></div><p><strong>'+title+'.</strong> '+message+'</p>';
- $("#eventFeed").prepend(el);state.count++;$("#eventCount").textContent=String(state.count).padStart(2,"0")+" EVENTS";
+ $("#eventFeed").prepend(el);state.count++;$("#eventCount").textContent=String(state.count).padStart(2,"0")+" EVENTS";if($("#reportEvents"))$("#reportEvents").textContent=String(state.count).padStart(2,"0");
  if(bridge)bridge.recordEvent({missionId:"RE-042",actor,title,message,tone});
 }
 function resetComms(){
@@ -170,8 +170,10 @@ function renderMissionInput(){
  const m=state.mission;
  $("#sumSeller").textContent=m.seller.name+" · "+m.seller.phone;
  $("#sumPortals").textContent=m.portals.length+" PORTALS";
- $("#sumMandatory").textContent=m.mandatory.length+" MANDATORY FIELDS";
+ $("#sumMandatory").textContent=m.mandatory.length+" KEY FIELDS";
  $("#portalMetric").textContent=String(m.portals.length).padStart(2,"0");
+ $("#kpiPortals").textContent="0/"+m.portals.length;$("#reportPortals").textContent=String(m.portals.length).padStart(2,"0");
+ const photos=(m.seller.photos||[]).length;$("#kpiPhotos").textContent=photos+"/20";$("#kpiPhotoBar").style.width=Math.min(100,photos/20*100)+"%";$("#kpiPortalBar").style.width="0%";$("#reportPhotos").textContent=String(photos).padStart(2,"0");
  $("#missionTitle").textContent=(m.seller.title||"Property listing").slice(0,70)+" · "+m.portals.length+" portals";
  $("#missionSub").textContent="Register accounts, write SEO listings, audit, publish, and verify live links.";
 }
@@ -209,7 +211,7 @@ function renderLinks(){
 }
 function addPublished(portal,id){
  state.publishedUrls.push({portal,id,url:"https://"+portal.toLowerCase().replace(/[^a-z]/g,"")+".example/"+id,agent:"warden"});
- renderLinks();
+ renderLinks();const total=state.mission.portals.length;$("#kpiPortals").textContent=state.publishedUrls.length+"/"+total;$("#kpiPortalBar").style.width=Math.min(100,state.publishedUrls.length/total*100)+"%";
 }
 async function ledgerShowcase(){
  if(!ledger)return;await ledger.startMission("RE-042");
@@ -421,7 +423,7 @@ $("#voiceBtn").onclick=()=>{if($("#guideStatus").textContent.includes("Слуш�
 function openInput(){const dialog=$("#setupDialog");if(!dialog)return;try{loadSetupForm()}catch(error){console.warn("Input form restore failed",error)}if(typeof dialog.showModal==="function")dialog.showModal();else dialog.setAttribute("open","")}
 $("#setupBtn").onclick=openInput;$("#leftInput").onclick=openInput;
 function leftTool(tab){document.querySelectorAll(".left-tools button").forEach(b=>b.classList.toggle("active",b.id.toLowerCase().includes(tab)));const box=$("#leftToolStatus"),messages={listing:["LISTING PACK","Title, description, media priority and portal variants"],reports:["REPORTS","Audit trail, publication status and verified links"],input:["MISSION INPUT","Brief, photos and reusable property parameters"]};box.innerHTML="<b>"+messages[tab][0]+"</b><span>"+messages[tab][1]+"</span>";if(tab==="input")openInput()}
-$("#leftListing").onclick=()=>leftTool("listing");$("#leftReports").onclick=()=>leftTool("reports");$("#saveSetup").onclick=saveSetupForm;$("#speed").onchange=e=>{state.speed=Number(e.target.value);event("system","Timeline speed changed","System is running at "+state.speed+"×.","amber")};$("#approveBtn").onclick=()=>resolve(true);$("#rejectBtn").onclick=()=>resolve(false);$("#inspectBtn").onclick=()=>$("#inspectDialog").showModal();$("#clearFeed").onclick=()=>{$("#eventFeed").innerHTML="";state.count=0;$("#eventCount").textContent="00 EVENTS"};canvas.onclick=canvasClick;window.onresize=resize;if("ResizeObserver"in window)new ResizeObserver(resize).observe(canvas);
+$("#leftListing").onclick=()=>{leftTool("listing");openInput()};$("#leftReports").onclick=()=>{leftTool("reports");const report=$("#reportsDialog");if(report&&typeof report.showModal==="function")report.showModal()};$("#saveSetup").onclick=saveSetupForm;$("#speed").onchange=e=>{state.speed=Number(e.target.value);event("system","Timeline speed changed","System is running at "+state.speed+"×.","amber")};$("#approveBtn").onclick=()=>resolve(true);$("#rejectBtn").onclick=()=>resolve(false);$("#inspectBtn").onclick=()=>$("#inspectDialog").showModal();$("#clearFeed").onclick=()=>{$("#eventFeed").innerHTML="";state.count=0;$("#eventCount").textContent="00 EVENTS"};canvas.onclick=canvasClick;window.onresize=resize;if("ResizeObserver"in window)new ResizeObserver(resize).observe(canvas);
 window.onkeydown=e=>{if(e.code==="Space"&&e.target.tagName!=="BUTTON"){e.preventDefault();state.running?pause():start()}if(e.key.toLowerCase()==="r")reset()};
 bindLedger();
 bindTransport();

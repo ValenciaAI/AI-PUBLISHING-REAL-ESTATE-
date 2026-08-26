@@ -108,8 +108,14 @@
           <div class="progress"><i id="progressBar"></i></div>
           <div id="stages" class="stages"><span>INTAKE</span><span>REGISTER</span><span>CONTENT</span><span>COMPLIANCE</span><span>PUBLISH</span><span>VERIFY</span></div>
           <div id="inputSummary" class="input-summary">
-            <span>SELLER</span><b id="sumSeller">Anna Kowalska · +48 601 234 567</b>
-            <em id="sumPortals">6 PORTALS</em><em id="sumMandatory">5 MANDATORY FIELDS</em>
+            <span>PROPERTY PROFILE</span><b id="sumSeller">Dolina Leśna</b>
+            <em id="sumPortals">6 PORTALS</em><em id="sumMandatory">14 KEY FIELDS</em>
+          </div>
+          <div class="kpi-grid" aria-label="Mission statistics">
+            <div><span>AGENTS</span><b>7/7</b><i style="width:100%"></i></div>
+            <div><span>PHOTOS</span><b id="kpiPhotos">0/20</b><i id="kpiPhotoBar" style="width:0%"></i></div>
+            <div><span>PORTALS</span><b id="kpiPortals">0/6</b><i id="kpiPortalBar" style="width:0%"></i></div>
+            <div><span>REPORTS</span><b id="kpiReports">READY</b><i style="width:100%"></i></div>
           </div>
         </div>
       </section>
@@ -199,6 +205,8 @@ Nieruchomosci.pl</textarea>
     </div>
     <footer><button value="close">Cancel</button><button id="saveSetup" class="primary">Save &amp; use for mission</button></footer>
   </form></dialog>
+
+  <dialog id="reportsDialog"><form method="dialog" class="reports-dialog"><header><div><span>V SHARK ANALYTICS</span><h2>Mission reports</h2></div><button value="close">×</button></header><section class="report-cards"><article><b id="reportPortals">06</b><span>PORTALS TARGETED</span></article><article><b id="reportPhotos">00</b><span>PHOTOS PRIORITIZED</span></article><article><b>7/7</b><span>AGENTS ONLINE</span></article><article><b id="reportEvents">03</b><span>EVENTS LOGGED</span></article></section><section class="report-log"><h3>ACTIVITY REPORT</h3><p>Mission input, reusable property parameters and media priority are available to every agent.</p><p>Every portal receives the first 10 prioritized photos when its upload limit is reached.</p><p>Approval airlock remains active before any publication.</p></section><footer><button value="close" class="primary">Close report</button></footer></form></dialog>
 
   <dialog id="inspectDialog"><form method="dialog">
     <header><h2>Action inspection</h2><button value="close">×</button></header>
