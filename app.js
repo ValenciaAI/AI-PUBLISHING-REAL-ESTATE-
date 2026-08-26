@@ -347,6 +347,8 @@ function drawAgent(a){
  ctx.fillStyle="#18232d";ctx.fillRect(x-16+stride,y+12,7,8);ctx.fillRect(x-4,y+12,8,6);ctx.fillRect(x+9-stride,y+12,7,8);
  ctx.fillStyle="#101010";ctx.fillRect(x-9,y-8,5,7);ctx.fillRect(x+4,y-8,5,7);
  if(moving){ctx.globalAlpha=.4;ctx.fillStyle=a.color;for(let i=0;i<5;i++)ctx.fillRect(x-23-i*7,y+12+(i%2)*3,2,2);ctx.globalAlpha=1}
+ // Neural hologram head replaces the flat avatar head on the command floor.
+ ctx.globalAlpha=.82;ctx.strokeStyle=a.color;ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(x,y-10,15,13,0,0,Math.PI*2);ctx.stroke();for(let n=0;n<4;n++){ctx.beginPath();ctx.arc(x-5+n*3,y-11,5+n%2*3,n*.7,n*.7+2.1);ctx.stroke()}ctx.fillStyle="#eaffff";ctx.fillRect(x-7,y-12,2,2);ctx.fillRect(x+5,y-12,2,2);ctx.globalAlpha=1;
  const status=a.state==="waiting approval"?C.red:a.state==="complete"?C.green:a.state==="idle"?"#555":a.color;ctx.fillStyle=status;ctx.fillRect(x+16,y-19,5,5);
  ctx.fillStyle="#080808ed";ctx.fillRect(x-31,y+27,62,13);ctx.fillStyle="#e0e0da";ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillText(a.name.toUpperCase(),x,y+36);
  if(a.state!=="idle"||a.activity){const raw=(a.activity||a.task).toLowerCase(),label=raw.length>27?raw.slice(0,26)+"…":raw;ctx.font="7px monospace";const bw=Math.min(128,ctx.measureText(label).width+14);ctx.fillStyle="#070807f2";ctx.fillRect(x-bw/2,y+42,bw,14);ctx.strokeStyle=a.color+"99";ctx.strokeRect(x-bw/2+.5,y+42.5,bw-1,13);ctx.fillStyle=a.color;ctx.fillText(label,x,y+52)}
