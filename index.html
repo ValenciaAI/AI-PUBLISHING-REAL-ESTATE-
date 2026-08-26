@@ -28,6 +28,8 @@
     <main class="grid">
       <aside class="panel roster">
         <div class="panel-head"><div><span>CREW MANIFEST</span><h2>Agents</h2></div><b>7 ONLINE</b></div>
+        <nav class="left-tools" aria-label="Mission tools"><button id="leftInput" type="button" class="active">INPUT</button><button id="leftListing" type="button">LISTING</button><button id="leftReports" type="button">REPORTS</button></nav>
+        <div id="leftToolStatus" class="left-tool-status"><b>MISSION INPUT</b><span>Brief, photos and reusable property parameters</span></div>
         <div id="agentRoster" class="agent-list"></div>
         <div class="health">
           <div><span>STATION HEALTH</span><b>98.7%</b></div><i><em></em></i>
@@ -48,6 +50,7 @@
         </div>
         <div class="canvas-wrap">
           <canvas id="stationCanvas"></canvas>
+          <aside class="holo-guide" aria-label="Russian voice guide"><div class="holo-face"><i></i></div><div><b>V SHARK GUIDE</b><span id="guideStatus">Готова озвучивать миссию</span></div><button id="voiceBtn" type="button">◉ VOICE RU</button></aside>
           <button id="ledgerMini" class="ledger-mini" type="button">
             <span>LISTING LEDGER</span><b id="ledgerCount">0 ARTIFACTS</b><em id="ledgerIntegrity">CHAIN READY</em>
           </button>
