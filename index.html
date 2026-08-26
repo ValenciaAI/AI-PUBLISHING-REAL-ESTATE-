@@ -48,6 +48,11 @@
         </div>
         <div class="canvas-wrap">
           <canvas id="stationCanvas"></canvas>
+          <section class="command-console" aria-label="Command point conversation">
+            <div class="command-status"><i id="voiceState"></i><span>COMMAND POINT</span><b id="voiceStateText">READY FOR TEXT OR VOICE</b></div>
+            <div class="command-row"><input id="commandInput" type="text" maxlength="500" placeholder="Talk to V SHARK…" autocomplete="off"><button id="sendCommand" type="button">SEND</button><button id="voiceCommand" type="button" aria-label="Start voice command">◉ VOICE</button></div>
+            <p id="commandReply" class="command-reply" aria-live="polite">Say “Привет, моя хорошая, как у нас дела?” or type a command.</p>
+          </section>
           <button id="ledgerMini" class="ledger-mini" type="button">
             <span>LISTING LEDGER</span><b id="ledgerCount">0 ARTIFACTS</b><em id="ledgerIntegrity">CHAIN READY</em>
           </button>

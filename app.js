@@ -14,7 +14,7 @@ const DEFAULT_MISSION={
 };
 function loadInput(){try{const s=JSON.parse(localStorage.getItem(INPUT_KEY)||"null");if(s&&s.seller)return s}catch{}return JSON.parse(JSON.stringify(DEFAULT_MISSION))}
 function saveInput(){try{localStorage.setItem(INPUT_KEY,JSON.stringify(state.mission))}catch{}}
-const state={running:false,paused:false,approval:false,complete:false,rejected:false,elapsed:0,duration:360000,last:performance.now(),cursor:0,verifyCursor:0,speed:1,count:0,spend:0,artifacts:0,particles:[],selected:"helm",ambientAt:performance.now()+1800,mode:"mission",publishedUrls:[],mission:loadInput()};
+const state={running:false,paused:false,approval:false,complete:false,rejected:false,robotSpeaking:false,elapsed:0,duration:360000,last:performance.now(),cursor:0,verifyCursor:0,speed:1,count:0,spend:0,artifacts:0,particles:[],selected:"helm",ambientAt:performance.now()+1800,mode:"mission",publishedUrls:[],mission:loadInput()};
 state.mission.seoTitle=generateSeoTitleSafe();
 const zones=[
  {id:"command",name:"COMMAND DESK",x:25,y:110,w:200,h:125,color:C.helm,type:"bridge"},
@@ -329,7 +329,7 @@ function drawHologramHead(){
  const now=performance.now(),t=now/1000,cx=450,base=494,cy=300;
  ctx.save();ctx.globalCompositeOperation="lighter";
  // Projector rings and volumetric light, all drawn natively on canvas.
- const pulse=1+Math.sin(t*2)*.035;
+ const pulse=1+Math.sin(t*2)*.035+(state.robotSpeaking?.10:0);
  ctx.fillStyle="#16e7ff12";ctx.beginPath();ctx.ellipse(cx,base,118,18,0,0,Math.PI*2);ctx.fill();
  for(let i=0;i<5;i++){ctx.strokeStyle=`rgba(105,250,255,${.55-i*.08})`;ctx.lineWidth=i===0?2:1;ctx.beginPath();ctx.ellipse(cx,base,64+i*15,8+i*2,0,0,Math.PI*2);ctx.stroke()}
  ctx.strokeStyle="#a4ffff66";ctx.beginPath();ctx.arc(cx,base-72,105,Math.PI*1.08,Math.PI*1.92);ctx.stroke();
@@ -429,6 +429,28 @@ function tick(now){
  ambient(now);move(dt);draw();requestAnimationFrame(tick);
 }
 function canvasClick(e){const r=canvas.getBoundingClientRect(),t=transform(),x=(e.clientX-r.left-t.ox)/t.s,y=(e.clientY-r.top-t.oy)/t.s,a=agents.find(q=>Math.hypot(q.x-x,q.y-y)<30);if(a)return select(a.id);const z=zones.find(q=>x>=q.x&&x<=q.x+q.w&&y>=q.y&&y<=q.y+q.h);if(z){const box=$("#selection"),crew=agents.filter(a=>a.zone===z.id).length;box.querySelector("span").textContent="STATION ZONE";box.querySelector("b").textContent=z.name;box.querySelector("p").textContent=crew+" crew assigned · "+z.type.toUpperCase()+" subsystem online.";box.style.borderColor=z.color;box.querySelector("span").style.color=z.color}}
+function robotAnswer(text){
+ const normalized=text.toLowerCase().replace(/[!?.,]/g," ").replace(/\s+/g," ").trim();let reply;
+ if(/привет|здравствуй|добрый день/.test(normalized)&&(/дела|результат|состояни/.test(normalized)||normalized.length<70)){
+  const result=state.complete?"все объявления опубликованы и проверены":state.approval?"пакет готов и ждёт вашего решения":state.running?"миссия выполняется по плану":"система готова к запуску";
+  reply=`Привет, Валентина, всё отлично! Сегодня мы сделали: ${result}. В ленте ${state.count} событий, артефактов ${state.artifacts}, порталов ${state.mission.portals.length}.`;
+ }else if(/статус|как там|результат/.test(normalized)) reply=`Статус командного пункта: ${state.complete?"миссия завершена":"миссия в работе"}. Агентов онлайн: 7 из 7. Порталов: ${state.mission.portals.length}.`;
+ else if(/запусти|старт|начни/.test(normalized)){start();reply="Принято. Запускаю миссию публикации и передаю задачу агентам."}
+ else if(/пауза|останов/.test(normalized)){pause();reply="Поняла. Приостанавливаю выполнение миссии."}
+ else reply="Я на связи, Валентина. Могу сообщить статус миссии, запустить публикацию или поставить её на паузу.";
+ $("#commandReply").textContent=reply;$("#voiceStateText").textContent="V SHARK IS RESPONDING";state.robotSpeaking=true;event("v shark","Command point reply",reply,"cyan");
+ if("speechSynthesis"in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(reply);u.lang="ru-RU";u.rate=.95;u.pitch=.9;u.onend=()=>{state.robotSpeaking=false;$("#voiceStateText").textContent="READY FOR TEXT OR VOICE";};speechSynthesis.speak(u)}else setTimeout(()=>{state.robotSpeaking=false;$("#voiceStateText").textContent="READY FOR TEXT OR VOICE"},Math.min(7000,reply.length*45));
+}
+function sendCommand(){const input=$("#commandInput"),text=input&&input.value.trim();if(!text)return;robotAnswer(text);input.value=""}
+function bindCommandPoint(){
+ const input=$("#commandInput"),send=$("#sendCommand"),voice=$("#voiceCommand");if(!input)return;
+ send.onclick=sendCommand;input.onkeydown=e=>{if(e.key==="Enter")sendCommand()};
+ const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!Recognition){voice.title="Voice recognition is not supported in this browser";voice.onclick=()=>{ $("#commandReply").textContent="Голосовой ввод не поддерживается этим браузером. Используйте текстовое поле."};return}
+ const recognition=new Recognition();recognition.lang="ru-RU";recognition.interimResults=false;recognition.maxAlternatives=1;
+ voice.onclick=()=>{try{recognition.start();voice.classList.add("listening");$("#voiceState").className="active";$("#voiceStateText").textContent="LISTENING…"}catch{}};
+ recognition.onresult=e=>{input.value=e.results[0][0].transcript;sendCommand()};recognition.onerror=()=>{$("#voiceStateText").textContent="VOICE ERROR — TRY AGAIN"};recognition.onend=()=>{voice.classList.remove("listening");if(!state.robotSpeaking){$("#voiceState").className="";$("#voiceStateText").textContent="READY FOR TEXT OR VOICE"}};
+}
 function clock(){$("#clock").textContent=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Warsaw",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(new Date())}
 function transportState(status,detail={}){
  const badge=$("#connectionBadge"),label=$("#connectionText"),bus=$("#eventBusStatus"),footer=$("#transportStatus"),session=(detail.sessionId||bridge&&bridge.sessionId||"session_pending").split("_").pop().slice(-6).toUpperCase();
@@ -452,6 +474,7 @@ $("#startBtn").onclick=start;$("#pauseBtn").onclick=pause;$("#resetBtn").onclick
 window.onkeydown=e=>{if(e.code==="Space"&&e.target.tagName!=="BUTTON"){e.preventDefault();state.running?pause():start()}if(e.key.toLowerCase()==="r")reset()};
 bindLedger();
 bindTransport();
+bindCommandPoint();
 renderRoster();renderMissionInput();resize();select("helm");stage(null,0,"Publish "+state.mission.seller.name.split(" ")[0]+"'s property on "+state.mission.portals.length+" portals","Register accounts, write SEO listings, audit, publish, and verify live links.");document.querySelectorAll("#stages span").forEach(n=>n.classList.remove("active","done"));
 event("system","Station online","Room telemetry, pathing, and the six-minute listing clock are live.","green");event("vault","Portal registry mounted","Portal account list and credential vault are ready for the seller brief.","cyan");event("airlock","Safety boundary armed","Listing publication requires one operator decision.","amber");
 clock();setInterval(clock,1000);requestAnimationFrame(tick);
