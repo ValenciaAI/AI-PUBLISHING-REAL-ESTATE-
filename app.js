@@ -185,7 +185,7 @@ function loadSetupForm(){
  $("#inPortals").value=m.portals.join("\n");
  const creds=Object.keys(m.credentials).map(p=>p+" | "+m.credentials[p].login+" | "+m.credentials[p].password).join("\n");
  $("#inCreds").value=creds;
- document.querySelectorAll("[data-param]").forEach(input=>{const item=m.mandatory.find(x=>x.label===input.dataset.param);if(item)input.value=item.value});$("#inMandatory").value=m.mandatory.filter(x=>!document.querySelector(`[data-param="${CSS.escape(x.label)}"]`)).map(x=>x.label+" = "+x.value).join("\n");
+ document.querySelectorAll("[data-param]").forEach(input=>{const item=m.mandatory.find(x=>x.label===input.dataset.param);if(item)input.value=item.value});$("#inMandatory").value=m.mandatory.filter(x=>![...document.querySelectorAll("[data-param]")].some(input=>input.dataset.param===x.label)).map(x=>x.label+" = "+x.value).join("\n");
 }
 function saveSetupForm(){
  const m=state.mission;
@@ -300,7 +300,7 @@ function details(z,active){
  if(z.type==="verify"){ctx.fillStyle="#231f2e";ctx.fillRect(z.x+22,z.y+48,166,64);ctx.strokeStyle="#5a4b6e";ctx.lineWidth=2;ctx.strokeRect(z.x+28,z.y+54,154,52);for(let i=0;i<5;i++){ctx.fillStyle="#383243";ctx.fillRect(z.x+38,z.y+60+i*9,36,5);ctx.fillStyle=active?C.green:"#5a6a55";ctx.fillRect(z.x+78,z.y+61+i*9,5,4)}}
 }
 function core(){
- const p=points.core,pulse=5+Math.sin(performance.now()/350)*2;ctx.fillStyle="#4ee7e20f";ctx.beginPath();ctx.arc(p.x,p.y,64+pulse,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#24424b";ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,48,0,Math.PI*2);ctx.stroke();ctx.setLineDash([3,6]);ctx.strokeStyle=C.cyan;ctx.beginPath();ctx.arc(p.x,p.y,36,performance.now()/1200,performance.now()/1200+Math.PI*1.5);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#0d171d";ctx.beginPath();ctx.arc(p.x,p.y,25,0,Math.PI*2);ctx.fill();ctx.fillStyle=C.cyan;ctx.font="bold 9px monospace";ctx.textAlign="center";ctx.fillText("V SHARK",p.x,p.y+3);ctx.font="12px sans-serif";ctx.fillText("🦈",p.x,p.y+20);ctx.textAlign="left";
+ const p=points.core,pulse=5+Math.sin(performance.now()/350)*2;ctx.fillStyle="#4ee7e20f";ctx.beginPath();ctx.arc(p.x,p.y,64+pulse,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#24424b";ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,48,0,Math.PI*2);ctx.stroke();ctx.setLineDash([3,6]);ctx.strokeStyle=C.cyan;ctx.beginPath();ctx.arc(p.x,p.y,36,performance.now()/1200,performance.now()/1200+Math.PI*1.5);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#0d171d";ctx.beginPath();ctx.arc(p.x,p.y,25,0,Math.PI*2);ctx.fill();ctx.fillStyle=C.cyan;ctx.font="bold 9px monospace";ctx.textAlign="center";ctx.fillText("V SHARK",p.x,p.y+5);ctx.textAlign="left";
 }
 function room(){
  ctx.fillStyle="#0b0b0a";ctx.fillRect(0,0,900,540);
