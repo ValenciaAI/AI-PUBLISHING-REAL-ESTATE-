@@ -1,20 +1,20 @@
 (() => {
 "use strict";
 const $=s=>document.querySelector(s), canvas=$("#stationCanvas"), ctx=canvas.getContext("2d");
-const C={helm:"#ef5a52",forge:"#eda63a",sentinel:"#8d74d6",scout:"#a6cf58",archive:"#50bcb5",relay:"#4e91cf",warden:"#d46a9e",green:"#a6cf58",amber:"#c99b3b",red:"#ef5a52",cyan:"#50bcb5",muted:"#747474"};
+const C={helm:"#ff355f",forge:"#ffb52e",sentinel:"#b94cff",scout:"#38ff4b",archive:"#16e7ff",relay:"#2489ff",warden:"#ef38ff",green:"#45ff64",amber:"#ffb52e",red:"#ff355f",cyan:"#16e7ff",muted:"#647892"};
 const bridge=window.portalLink||null;
 const ledger=window.listingLedger||null,artifactPackets=[],commSignals=[];
 let selectedArtifactId=null,ledgerToastTimer=null,commSequence=0;
 const INPUT_KEY="estate-ops.input.v1";
 const DEFAULT_MISSION={
- seller:{name:"Anna Kowalska",phone:"+48 601 234 567",photo:"photo_apartment.jpg",description:"Bright 2-room flat with a balcony, parking spot and a quiet neighbourhood.",video:"https://www.youtube.com/watch?v=RE-APARTMENT-TOUR"},
+ seller:{name:"Anna Kowalska",phone:"+48 601 234 567",photo:"photo_apartment.jpg",photos:[],title:"Sprzedam bezpośrednio Hotel i Restauracja Dolina Leśna",description:"Bright 2-room flat with a balcony, parking spot and a quiet neighbourhood.",video:"https://www.youtube.com/watch?v=RE-APARTMENT-TOUR"},
  portals:["OLX","Otodom","Morizon","Gratka","Domiporta","Nieruchomosci.pl"],
  credentials:{},
  mandatory:[{label:"Price",value:"449 000 PLN"},{label:"Area",value:"48 m²"},{label:"Rooms",value:"2"},{label:"Floor",value:"3/5"},{label:"Address",value:"ul. Kwiatowa 5, Warszawa"},{label:"Energy class",value:"C"},{label:"Balcony",value:"Yes"}]
 };
 function loadInput(){try{const s=JSON.parse(localStorage.getItem(INPUT_KEY)||"null");if(s&&s.seller)return s}catch{}return JSON.parse(JSON.stringify(DEFAULT_MISSION))}
 function saveInput(){try{localStorage.setItem(INPUT_KEY,JSON.stringify(state.mission))}catch{}}
-const state={running:false,paused:false,approval:false,complete:false,rejected:false,elapsed:0,duration:360000,last:performance.now(),cursor:0,verifyCursor:0,speed:1,count:0,spend:0,artifacts:0,particles:[],selected:"helm",ambientAt:performance.now()+1800,mode:"mission",publishedUrls:[],mission:loadInput()};
+const state={running:false,paused:false,approval:false,complete:false,rejected:false,robotSpeaking:false,elapsed:0,duration:360000,last:performance.now(),cursor:0,verifyCursor:0,speed:1,count:0,spend:0,artifacts:0,particles:[],selected:"helm",ambientAt:performance.now()+1800,mode:"mission",publishedUrls:[],mission:loadInput()};
 state.mission.seoTitle=generateSeoTitleSafe();
 const zones=[
  {id:"command",name:"COMMAND DESK",x:25,y:110,w:200,h:125,color:C.helm,type:"bridge"},
@@ -37,9 +37,11 @@ const initial=[
 ];
 let agents=initial.map(a=>({...a}));
 const stages=["intake","register","content","compliance","publish","verify"];
+function selectedPhotosForPortal(portal,maxPhotos=10){return (state.mission.seller.photos||[]).slice(0,Math.min(20,maxPhotos))}
 function generateSeoTitleSafe(){try{return generateSeoTitle()}catch{return "2-room flat 48 m² · balcony · Warszawa"}}
 function generateSeoTitle(){
- const m=state.mission,f=(re,fb)=>{const x=m.mandatory.find(k=>re.test(k.label));return x?x.value:fb};
+ const m=state.mission;if(m.seller.title)return m.seller.title;
+  const f=(re,fb)=>{const x=m.mandatory.find(k=>re.test(k.label));return x?x.value:fb};
  const rooms=f(/room|pokoj|комн/i,"2"),area=f(/area|powierzchn|площадь/i,"48 m²"),city=f(/city|miasto|город/i,"Warszawa");
  return rooms+"-room flat "+area+" · balcony · "+city+" — quick sale";
 }
@@ -47,8 +49,8 @@ const timeline=[
  {at:1000,run(){const m=state.mission;event("helm","Listing opened","RE-042 received with seller brief, mandatory data, and portal accounts.","cyan");agent("helm","working","parsing seller & portals","command");stage("intake",1,"Scoping the publishing mission","Helm is parsing the seller brief, mandatory fields, and the portal account list.")}},
  {at:10000,run(){event("helm","Work graph created","3 workstreams — content, registration, verification — plus one approval gate.","green");agent("helm","delegating","routing scope","core");agent("scout","working","receiving content brief","core");agent("archive","working","receiving portal accounts","core");sendComm("helm","scout","scope.route · seller + mandatory fields","route");sendComm("helm","archive","accounts.route · portal cabinets for login","route");sealArtifact({baseId:"seller-brief",type:"intake",label:"SELLER BRIEF",createdBy:"helm",payload:{name:state.mission.seller.name,phone:"masked",photo:true,video:!!state.mission.seller.video,portals:state.mission.portals.length,mandatory:state.mission.mandatory.length}})}},
  {at:20000,run(){event("archive","Account registration started","Logging into personal cabinets on "+state.mission.portals.length+" portals with provided credentials.","cyan");agent("helm","idle","watching dependency graph","lounge");agent("archive","working","registering personal cabinets","registry");stage("register",18,"Registering portal accounts","Archive is logging into or registering profiles on each portal from the list.")}},
- {at:33000,run(){event("scout","Media validation started","Photo and video link checked against the mandatory listing fields.","cyan");agent("scout","working","validating photo & video","media");stage("content",20,"Media pack in progress","Scout is validating the seller photo and the optional YouTube video.")}},
- {at:47000,run(){event("scout","Media pack ready","Photo normalized; mandatory fields confirmed for every listing.","green");agent("scout","working","rendering media pack","photo");state.artifacts=2;sealArtifact({baseId:"media-pack",type:"media",label:"MEDIA PACK",createdBy:"scout",parentIds:["seller-brief"],payload:{photo:true,video:!!state.mission.seller.video}})}},
+ {at:33000,run(){event("scout","Media validation started","Photo and video link checked against the mandatory listing fields; "+selectedPhotosForPortal("portal",10).length+" priority photos queued (first 10 used where a portal limits uploads).","cyan");agent("scout","working","validating photo & video","media");stage("content",20,"Media pack in progress","Scout is validating the seller photo and the optional YouTube video.")}},
+ {at:47000,run(){event("scout","Media pack ready","Photo normalized; mandatory fields confirmed for every listing.","green");agent("scout","working","rendering media pack","photo");state.artifacts=2;sealArtifact({baseId:"media-pack",type:"media",label:"MEDIA PACK",createdBy:"scout",parentIds:["seller-brief"],payload:{photos:(state.mission.seller.photos||[]).length,priorityPhotos:(state.mission.seller.photos||[]).slice(0,10).length,video:!!state.mission.seller.video}})}},
  {at:60000,run(){event("forge","SEO copywriting started","Generating a selling title and description from mandatory data.","cyan");agent("forge","working","writing SEO selling title","writing");stage("content",34,"Writing SEO listings","Forge is producing the selling title and portal-ready listing copy.")}},
  {at:76000,run(){state.mission.seoTitle=generateSeoTitle();event("forge","SEO title ready","Selling title generated: \""+state.mission.seoTitle+"\"","green");agent("forge","working","rendering listing draft","writing");state.artifacts=4;sealArtifact({baseId:"seo-title",type:"seo_title",label:"SEO SELLING TITLE",createdBy:"forge",parentIds:["media-pack"],payload:{title:state.mission.seoTitle}})}},
  {at:92000,run(){event("archive","Accounts ready",""+(Object.keys(state.mission.credentials).length?Object.keys(state.mission.credentials).length+" cabinets authenticated":"6 profiles registered for first use")+" · sessions stored in vault.","green");agent("archive","working","storing portal sessions","registry");sealArtifact({baseId:"portal-accounts",type:"portal_credentials",label:"PORTAL ACCOUNTS",createdBy:"archive",parentIds:["seller-brief"],payload:{provided:Object.keys(state.mission.credentials).length,registered:state.mission.portals.length-Object.keys(state.mission.credentials).length}})}},
@@ -172,12 +174,22 @@ function renderMissionInput(){
  $("#sumPortals").textContent=m.portals.length+" PORTALS";
  $("#sumMandatory").textContent=m.mandatory.length+" MANDATORY FIELDS";
  $("#portalMetric").textContent=String(m.portals.length).padStart(2,"0");
- $("#missionTitle").textContent="Publish "+m.seller.name.split(" ")[0]+"'s property on "+m.portals.length+" portals";
+ $("#missionTitle").textContent=m.seller.title||("Publish "+m.seller.name.split(" ")[0]+"'s property on "+m.portals.length+" portals");
  $("#missionSub").textContent="Register accounts, write SEO listings, audit, publish, and verify live links.";
 }
+let pendingPhotos=[];
+function renderPhotoPreview(){
+ const box=$("#photoPreview");if(!box)return;
+ box.innerHTML=pendingPhotos.map((photo,i)=>`<div class="photo-tile" draggable="true" data-photo="${i}"><span class="photo-rank">${i+1}</span>${photo.url?`<img src="${escapeHtml(photo.url)}" alt="">`:`<div class="photo-placeholder">IMG</div>`}<b>${escapeHtml(photo.name)}</b><button type="button" data-remove-photo="${i}" aria-label="Remove photo">×</button></div>`).join("");
+ box.querySelectorAll("[data-remove-photo]").forEach(b=>b.onclick=()=>{pendingPhotos.splice(Number(b.dataset.removePhoto),1);renderPhotoPreview()});
+ box.querySelectorAll(".photo-tile").forEach(tile=>{tile.ondragstart=e=>e.dataTransfer.setData("text/plain",tile.dataset.photo);tile.ondragover=e=>e.preventDefault();tile.ondrop=e=>{e.preventDefault();const from=Number(e.dataTransfer.getData("text/plain")),to=Number(tile.dataset.photo);if(from===to)return;const [item]=pendingPhotos.splice(from,1);pendingPhotos.splice(to,0,item);renderPhotoPreview()}});
+}
+function addPhotoFiles(files){[...files].filter(f=>f.type.startsWith("image/")).slice(0,20-pendingPhotos.length).forEach(file=>{const reader=new FileReader();reader.onload=()=>{pendingPhotos.push({name:file.name,url:reader.result});renderPhotoPreview()};reader.readAsDataURL(file)});}
+function bindPhotoUpload(){const input=$("#inPhotos"),drop=$("#photoDrop");if(!input||!drop)return;input.onchange=e=>addPhotoFiles(e.target.files);drop.onclick=()=>input.click();drop.ondragover=e=>{e.preventDefault();drop.classList.add("dragging")};drop.ondragleave=()=>drop.classList.remove("dragging");drop.ondrop=e=>{e.preventDefault();drop.classList.remove("dragging");addPhotoFiles(e.dataTransfer.files)}}
+
 function loadSetupForm(){
  const m=state.mission;
- $("#inSeller").value=m.seller.name;$("#inPhone").value=m.seller.phone;$("#inPhoto").value=m.seller.photo;$("#inVideo").value=m.seller.video;$("#inDescription").value=m.seller.description;
+ $("#inSeller").value=m.seller.name;$("#inPhone").value=m.seller.phone;$("#inTitle").value=m.seller.title||m.seoTitle||"";pendingPhotos=(m.seller.photos||[]).slice(0,20);renderPhotoPreview();updateFieldCounts();$("#inVideo").value=m.seller.video;$("#inDescription").value=m.seller.description;
  $("#inPortals").value=m.portals.join("\n");
  const creds=Object.keys(m.credentials).map(p=>p+" | "+m.credentials[p].login+" | "+m.credentials[p].password).join("\n");
  $("#inCreds").value=creds;
@@ -185,7 +197,7 @@ function loadSetupForm(){
 }
 function saveSetupForm(){
  const m=state.mission;
- m.seller={name:$("#inSeller").value.trim(),phone:$("#inPhone").value.trim(),photo:$("#inPhoto").value.trim(),description:$("#inDescription").value.trim(),video:$("#inVideo").value.trim()};
+ m.seller={name:$("#inSeller").value.trim(),phone:$("#inPhone").value.trim(),photos:pendingPhotos.slice(0,20),title:$("#inTitle").value.trim().slice(0,70),photo:(pendingPhotos[0]&&pendingPhotos[0].name)||"",description:$("#inDescription").value.trim(),video:$("#inVideo").value.trim()};
  m.portals=$("#inPortals").value.split(/\n+/).map(s=>s.trim()).filter(Boolean);
  if(!m.portals.length)m.portals=DEFAULT_MISSION.portals.slice();
  const creds={};
@@ -296,41 +308,69 @@ function details(z,active){
  if(z.type==="verify"){ctx.fillStyle="#231f2e";ctx.fillRect(z.x+22,z.y+48,166,64);ctx.strokeStyle="#5a4b6e";ctx.lineWidth=2;ctx.strokeRect(z.x+28,z.y+54,154,52);for(let i=0;i<5;i++){ctx.fillStyle="#383243";ctx.fillRect(z.x+38,z.y+60+i*9,36,5);ctx.fillStyle=active?C.green:"#5a6a55";ctx.fillRect(z.x+78,z.y+61+i*9,5,4)}}
 }
 function core(){
- const p=points.core,pulse=5+Math.sin(performance.now()/350)*2;ctx.fillStyle="#4ee7e20f";ctx.beginPath();ctx.arc(p.x,p.y,64+pulse,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#24424b";ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,48,0,Math.PI*2);ctx.stroke();ctx.setLineDash([3,6]);ctx.strokeStyle=C.cyan;ctx.beginPath();ctx.arc(p.x,p.y,36,performance.now()/1200,performance.now()/1200+Math.PI*1.5);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#0d171d";ctx.beginPath();ctx.arc(p.x,p.y,25,0,Math.PI*2);ctx.fill();ctx.fillStyle=C.cyan;ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillText("EVENT",p.x,p.y-2);ctx.fillText("CORE",p.x,p.y+10);ctx.textAlign="left";
+ const p=points.core,pulse=5+Math.sin(performance.now()/350)*2;ctx.fillStyle="#16e7ff18";ctx.beginPath();ctx.arc(p.x,p.y,64+pulse,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#1b91a5";ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,48,0,Math.PI*2);ctx.stroke();ctx.setLineDash([3,6]);ctx.strokeStyle=C.cyan;ctx.beginPath();ctx.arc(p.x,p.y,36,performance.now()/1200,performance.now()/1200+Math.PI*1.5);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#06243a";ctx.beginPath();ctx.arc(p.x,p.y,25,0,Math.PI*2);ctx.fill();ctx.fillStyle=C.cyan;ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillText("EVENT",p.x,p.y-2);ctx.fillText("CORE",p.x,p.y+10);ctx.textAlign="left";
 }
 function room(){
- ctx.fillStyle="#0b0b0a";ctx.fillRect(0,0,900,540);
- ctx.fillStyle="#12110f";ctx.fillRect(0,0,900,108);ctx.fillStyle="#2b2118";ctx.fillRect(0,101,900,8);
- ctx.strokeStyle="#241e18";ctx.lineWidth=1;for(let y=109;y<540;y+=22){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(900,y);ctx.stroke()}for(let x=0;x<900;x+=70){ctx.beginPath();ctx.moveTo(x,109);ctx.lineTo(x+25,540);ctx.stroke()}
- drawWindow(24,18,142,58);drawWindow(180,18,142,58);drawWallMonitor(345,16,250,67);drawClock(746,45);
- ctx.fillStyle="#080908";ctx.fillRect(0,88,900,13);ctx.fillStyle="#77736a";ctx.font="bold 7px monospace";ctx.fillText("ESTATE OPS $PUBLISH · ONE HUMAN · SEVEN BOTS · FLOOR STATUS: NOMINAL",25,97);
- [165,455,740].forEach(x=>{ctx.fillStyle="#d7c28b10";ctx.beginPath();ctx.moveTo(x-13,109);ctx.lineTo(x-82,320);ctx.lineTo(x+82,320);ctx.closePath();ctx.fill();ctx.fillStyle="#6c5c3b";ctx.fillRect(x-17,106,34,5)});
- ctx.fillStyle="#15130f";ctx.fillRect(280,260,350,65);ctx.strokeStyle="#37312a";ctx.strokeRect(280,260,350,65);
- ctx.fillStyle="#746958";ctx.font="bold 8px monospace";ctx.fillText("COMMON HANDOFF FLOOR",290,274);
+ ctx.fillStyle="#061326";ctx.fillRect(0,0,900,540);
+ // Deep navy command chamber with perspective floor grid.
+ ctx.fillStyle="#0b2038";ctx.fillRect(0,0,900,106);ctx.fillStyle="#123b5d";ctx.fillRect(0,102,900,5);
+ ctx.strokeStyle="#164363";ctx.lineWidth=1;
+ for(let y=112;y<540;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(900,y);ctx.stroke()}
+ for(let x=0;x<900;x+=36){ctx.beginPath();ctx.moveTo(x,108);ctx.lineTo(x+(x-450)*.32,540);ctx.stroke()}
+ drawWindow(20,15,170,66);drawWindow(200,15,170,66);drawWallMonitor(385,13,250,70);drawClock(780,48);
+ ctx.fillStyle="#061326";ctx.fillRect(0,88,900,14);ctx.fillStyle="#72d9e7";ctx.font="bold 7px monospace";ctx.fillText("ESTATE OPS $PUBLISH · ONE HUMAN · SEVEN BOTS · FLOOR STATUS: NOMINAL",20,97);
+ // glass data architecture
+ for(let x of [30,690]){ctx.strokeStyle="#1c6282";ctx.fillStyle="#0b2a43aa";ctx.fillRect(x,150,180,205);ctx.strokeRect(x,150,180,205);ctx.strokeStyle="#267c99";ctx.strokeRect(x+18,172,144,155);ctx.strokeStyle="#1b526f";for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(x+25+i*27,180);ctx.lineTo(x+25+i*27,315);ctx.stroke()}ctx.fillStyle="#1de3f2";for(let i=0;i<7;i++)ctx.fillRect(x+26+i*18,185+(i%3)*14,9,2)}
+ // floating throughput card
+ ctx.fillStyle="#071a2d";ctx.fillRect(24,205,170,130);ctx.strokeStyle="#2081a0";ctx.strokeRect(24,205,170,130);ctx.fillStyle="#72e6ed";ctx.font="bold 8px monospace";ctx.fillText("LIVE THROUGHPUT GRAPH",36,220);ctx.strokeStyle="#24e5e5";ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<14;i++){let x=38+i*10,y=288-Math.sin(i*1.2+performance.now()/700)*18-(i%4)*5;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.stroke();ctx.lineWidth=1;
+ ctx.fillStyle="#071a2d";ctx.fillRect(706,210,168,130);ctx.strokeStyle="#2081a0";ctx.strokeRect(706,210,168,130);ctx.fillStyle="#72e6ed";ctx.font="bold 8px monospace";ctx.fillText("LIVE OPERATIONS",718,225);ctx.fillStyle="#86cdd7";ctx.font="7px monospace";ctx.fillText("AGENTS: 7",718,245);ctx.fillText("UTILIZATION: 84%",718,260);ctx.fillText("PORTALS: 06",718,275);
 }
-function drawWindow(x,y,w,h){const now=performance.now();ctx.fillStyle="#080b0e";ctx.fillRect(x,y,w,h);ctx.strokeStyle="#292b2a";ctx.strokeRect(x,y,w,h);ctx.fillStyle="#d8d8d0";ctx.beginPath();ctx.arc(x+w-24,y+18,8,0,Math.PI*2);ctx.fill();for(let i=0;i<24;i++){const bx=x+6+(i*37%(w-12)),bh=5+(i*11%23),lit=Math.sin(now/650+i*2.7)>.22;ctx.fillStyle=lit?(i%4?"#73794b":"#a99c55"):"#333724";ctx.fillRect(bx,y+h-bh-4,3,bh)}}
-function drawWallMonitor(x,y,w,h){const now=performance.now(),phase=now/720;ctx.fillStyle="#080b0c";ctx.fillRect(x,y,w,h);ctx.strokeStyle="#292d2d";ctx.strokeRect(x,y,w,h);ctx.strokeStyle="#1e2928";ctx.lineWidth=1;for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(x+8,y+15+i*11);ctx.lineTo(x+w-8,y+15+i*11);ctx.stroke()}ctx.save();ctx.beginPath();ctx.rect(x+8,y+17,w-16,h-22);ctx.clip();ctx.strokeStyle="#6f9f82";ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<28;i++){const px=x+9+i*9-(now/70%9),py=y+43-Math.sin(i*.63+phase)*10-Math.sin(i*.19+phase*.45)*7;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.stroke();ctx.strokeStyle="#526f8d";ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<28;i++){const px=x+9+i*9-(now/105%9),py=y+49-Math.cos(i*.48+phase*.72)*8;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.stroke();ctx.fillStyle="#a6cf58";ctx.fillRect(x+10+(now/9%(w-25)),y+21,2,38);ctx.restore();ctx.fillStyle="#696d68";ctx.font="7px monospace";ctx.fillText("FLOOR MONITOR / PUBLISH THROUGHPUT",x+10,y+13)}
-function drawClock(x,y){const now=new Date(),seconds=now.getSeconds()+now.getMilliseconds()/1000,minutes=now.getMinutes()+seconds/60,hours=now.getHours()%12+minutes/60,hand=(angle,length,width,color)=>{ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.sin(angle)*length,y-Math.cos(angle)*length);ctx.stroke()};ctx.fillStyle="#d7d2b9";ctx.beginPath();ctx.arc(x,y,31,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#534936";ctx.lineWidth=6;ctx.stroke();ctx.fillStyle="#665d49";for(let i=0;i<12;i++){const a=i*Math.PI/6;ctx.fillRect(x+Math.sin(a)*23-1,y-Math.cos(a)*23-1,2,2)}hand(hours*Math.PI/6,15,3,"#332c20");hand(minutes*Math.PI/30,21,2,"#332c20");hand(seconds*Math.PI/30,23,1,C.red);ctx.fillStyle="#332c20";ctx.fillRect(x-2,y-2,4,4)}
-function furniture(){
- zones.forEach(desk);meetingTable();serverRack(865,278);plant(40,290);plant(850,492);
- ctx.fillStyle="#233137";ctx.fillRect(292,285,18,35);ctx.fillStyle="#52646a";ctx.fillRect(295,279,12,8);
+function drawHologramHead(){
+ const now=performance.now(),t=now/1000,cx=450,base=494,cy=300;
+ ctx.save();ctx.globalCompositeOperation="lighter";
+ // Projector rings and volumetric light, all drawn natively on canvas.
+ const pulse=1+Math.sin(t*2)*.035+(state.robotSpeaking?.10:0);
+ ctx.fillStyle="#16e7ff12";ctx.beginPath();ctx.ellipse(cx,base,118,18,0,0,Math.PI*2);ctx.fill();
+ for(let i=0;i<5;i++){ctx.strokeStyle=`rgba(105,250,255,${.55-i*.08})`;ctx.lineWidth=i===0?2:1;ctx.beginPath();ctx.ellipse(cx,base,64+i*15,8+i*2,0,0,Math.PI*2);ctx.stroke()}
+ ctx.strokeStyle="#a4ffff66";ctx.beginPath();ctx.arc(cx,base-72,105,Math.PI*1.08,Math.PI*1.92);ctx.stroke();
+ // shoulders / translucent neck
+ const body=ctx.createLinearGradient(0,390,0,515);body.addColorStop(0,"#61faff66");body.addColorStop(.6,"#19cfe944");body.addColorStop(1,"#0b607d05");ctx.fillStyle=body;ctx.beginPath();ctx.moveTo(cx-48,390);ctx.quadraticCurveTo(cx-68,430,cx-112,base);ctx.lineTo(cx+112,base);ctx.quadraticCurveTo(cx+68,430,cx+48,390);ctx.closePath();ctx.fill();
+ ctx.strokeStyle="#8dffffaa";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-45,387);ctx.lineTo(cx-52,455);ctx.lineTo(cx-93,base);ctx.moveTo(cx+45,387);ctx.lineTo(cx+52,455);ctx.lineTo(cx+93,base);ctx.stroke();
+ ctx.fillStyle="#38e7f433";ctx.fillRect(cx-25,385,50,100);ctx.strokeStyle="#b6ffff77";ctx.strokeRect(cx-25,385,50,100);
+ for(let y=394;y<480;y+=9){ctx.strokeStyle="#b5ffff55";ctx.beginPath();ctx.moveTo(cx-22,y);ctx.lineTo(cx+22,y);ctx.stroke()}
+ // Head volume
+ const head=ctx.createRadialGradient(cx-10,cy-65,12,cx,cy-50,116);head.addColorStop(0,"#d9ffff");head.addColorStop(.22,"#8efaff");head.addColorStop(.62,"#30dcecbb");head.addColorStop(1,"#08799c12");ctx.fillStyle=head;ctx.beginPath();ctx.ellipse(cx,cy-58,72,110,0,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle="#c4ffff";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(cx,cy-58,72,110,0,0,Math.PI*2);ctx.stroke();
+ // smooth robotic shell contours
+ ctx.strokeStyle="#dcffff99";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(cx-48,cy-137);ctx.quadraticCurveTo(cx,cy-168,cx+48,cy-137);ctx.moveTo(cx-61,cy-107);ctx.lineTo(cx-49,cy-65);ctx.lineTo(cx-56,cy-15);ctx.moveTo(cx+61,cy-107);ctx.lineTo(cx+49,cy-65);ctx.lineTo(cx+56,cy-15);ctx.moveTo(cx-53,cy+18);ctx.lineTo(cx-38,cy+72);ctx.lineTo(cx-15,cy+91);ctx.moveTo(cx+53,cy+18);ctx.lineTo(cx+38,cy+72);ctx.lineTo(cx+15,cy+91);ctx.stroke();
+ // eyes, nose, mouth
+ ctx.shadowColor="#bfffff";ctx.shadowBlur=16;ctx.fillStyle="#e8ffff";ctx.fillRect(cx-45,cy-82,27,6);ctx.fillRect(cx+18,cy-82,27,6);ctx.shadowBlur=0;
+ ctx.strokeStyle="#d9ffff";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-48,cy-79);ctx.quadraticCurveTo(cx-32,cy-96,cx-16,cy-79);ctx.moveTo(cx+16,cy-79);ctx.quadraticCurveTo(cx+32,cy-96,cx+48,cy-79);ctx.moveTo(cx,cy-72);ctx.lineTo(cx-9,cy-13);ctx.lineTo(cx+10,cy-9);ctx.moveTo(cx-29,cy+34);ctx.quadraticCurveTo(cx,cy+48,cx+29,cy+34);ctx.stroke();
+ ctx.fillStyle="#efffff";ctx.fillRect(cx-3,cy-79,6,6);ctx.fillRect(cx+31,cy-79,6,6);
+ // moving scan lines create the hologram effect
+ ctx.globalAlpha=.23;ctx.strokeStyle="#efffff";for(let y=-155;y<58;y+=10){const yy=cy+y+((now/10)%10);ctx.beginPath();ctx.moveTo(cx-67,yy);ctx.lineTo(cx+67,yy);ctx.stroke()}ctx.globalAlpha=1;
+ ctx.fillStyle="#aefeff";ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillText("NEURAL COMMAND CORE",cx,base+27);ctx.textAlign="left";ctx.restore();
 }
+function drawWindow(x,y,w,h){const now=performance.now();ctx.fillStyle="#06111f";ctx.fillRect(x,y,w,h);ctx.strokeStyle="#1d526d";ctx.strokeRect(x,y,w,h);ctx.fillStyle="#d8d8d0";ctx.beginPath();ctx.arc(x+w-24,y+18,8,0,Math.PI*2);ctx.fill();for(let i=0;i<24;i++){const bx=x+6+(i*37%(w-12)),bh=5+(i*11%23),lit=Math.sin(now/650+i*2.7)>.22;ctx.fillStyle=lit?(i%4?"#1b7991":"#d7e76a"):"#12324a";ctx.fillRect(bx,y+h-bh-4,3,bh)}}
+function drawWallMonitor(x,y,w,h){const now=performance.now(),phase=now/720;ctx.fillStyle="#06111f";ctx.fillRect(x,y,w,h);ctx.strokeStyle="#1d526d";ctx.strokeRect(x,y,w,h);ctx.strokeStyle="#16405b";ctx.lineWidth=1;for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(x+8,y+15+i*11);ctx.lineTo(x+w-8,y+15+i*11);ctx.stroke()}ctx.save();ctx.beginPath();ctx.rect(x+8,y+17,w-16,h-22);ctx.clip();ctx.strokeStyle="#29e6db";ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<28;i++){const px=x+9+i*9-(now/70%9),py=y+43-Math.sin(i*.63+phase)*10-Math.sin(i*.19+phase*.45)*7;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.stroke();ctx.strokeStyle="#ff4769";ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<28;i++){const px=x+9+i*9-(now/105%9),py=y+49-Math.cos(i*.48+phase*.72)*8;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.stroke();ctx.fillStyle="#45ff64";ctx.fillRect(x+10+(now/9%(w-25)),y+21,2,38);ctx.restore();ctx.fillStyle="#72d9e7";ctx.font="7px monospace";ctx.fillText("FLOOR MONITOR / PUBLISH THROUGHPUT",x+10,y+13)}
+function drawClock(x,y){const now=new Date(),seconds=now.getSeconds()+now.getMilliseconds()/1000,minutes=now.getMinutes()+seconds/60,hours=now.getHours()%12+minutes/60,hand=(angle,length,width,color)=>{ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.sin(angle)*length,y-Math.cos(angle)*length);ctx.stroke()};ctx.fillStyle="#b9f7ee";ctx.beginPath();ctx.arc(x,y,31,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#27627a";ctx.lineWidth=6;ctx.stroke();ctx.fillStyle="#3a8a9a";for(let i=0;i<12;i++){const a=i*Math.PI/6;ctx.fillRect(x+Math.sin(a)*23-1,y-Math.cos(a)*23-1,2,2)}hand(hours*Math.PI/6,15,3,"#332c20");hand(minutes*Math.PI/30,21,2,"#332c20");hand(seconds*Math.PI/30,23,1,C.red);ctx.fillStyle="#332c20";ctx.fillRect(x-2,y-2,4,4)}
+function furniture(){drawHologramHead();serverRack(865,278);serverRack(35,278);plant(40,490);plant(850,490);}
 function desk(z){
  const p=points[z.id],x=p.x-z.w/2+16,y=p.y-76,w=z.w-32;
- ctx.fillStyle="#211b15";ctx.fillRect(x,y,w,55);ctx.strokeStyle="#493928";ctx.strokeRect(x,y,w,55);
- ctx.fillStyle="#4a3724";ctx.fillRect(x-5,y+38,w+10,9);ctx.fillStyle="#2c2118";ctx.fillRect(x,y+47,w,16);
+ ctx.fillStyle="#0b1b2c";ctx.fillRect(x,y,w,55);ctx.strokeStyle=z.color;ctx.strokeRect(x,y,w,55);
+ ctx.fillStyle=z.color+"99";ctx.fillRect(x-5,y+38,w+10,9);ctx.fillStyle="#092039";ctx.fillRect(x,y+47,w,16);
  for(let i=0;i<5;i++){ctx.fillStyle=i%2?z.color:"#6b5740";ctx.fillRect(x+8+i*25,y+24-(i%3)*5,16,4+(i%3)*5)}
  ctx.fillStyle="#111719";ctx.fillRect(x+12,y-4,48,28);ctx.strokeStyle="#2c3738";ctx.strokeRect(x+12,y-4,48,28);ctx.fillStyle=z.color;ctx.fillRect(x+18,y+3,30,3);ctx.fillRect(x+18+(performance.now()/35%28),y+9,2,9);ctx.fillStyle=z.color+"88";ctx.fillRect(x+18,y+17,8+(performance.now()/120%21),2);
- ctx.fillStyle="#17130f";ctx.fillRect(x+w-54,y+5,42,25);ctx.fillStyle="#d0cbc0";ctx.fillRect(x+w-48,y+9,12,14);ctx.fillStyle="#8f8b82";ctx.fillRect(x+w-32,y+12,14,11);
- ctx.fillStyle="#080908";ctx.fillRect(p.x-45,p.y+20,90,14);ctx.fillStyle="#c4c4bd";ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillText(z.name,p.x,p.y+30);ctx.textAlign="left";
+ ctx.fillStyle="#0b1a29";ctx.fillRect(x+w-54,y+5,42,25);ctx.fillStyle="#d0cbc0";ctx.fillRect(x+w-48,y+9,12,14);ctx.fillStyle="#8f8b82";ctx.fillRect(x+w-32,y+12,14,11);
+ ctx.fillStyle="#06111f";ctx.fillRect(p.x-45,p.y+20,90,14);ctx.fillStyle="#d9f4ef";ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillText(z.name,p.x,p.y+30);ctx.textAlign="left";
 }
 function meetingTable(){
- const p=points.core;ctx.fillStyle="#191511";ctx.fillRect(p.x-82,p.y-33,164,62);ctx.strokeStyle="#51402e";ctx.strokeRect(p.x-82,p.y-33,164,62);ctx.fillStyle="#3b2c20";ctx.fillRect(p.x-72,p.y-23,144,42);
+ const p=points.core;ctx.fillStyle="#13283a";ctx.fillRect(p.x-82,p.y-33,164,62);ctx.strokeStyle="#276079";ctx.strokeRect(p.x-82,p.y-33,164,62);ctx.fillStyle="#0b2035";ctx.fillRect(p.x-72,p.y-23,144,42);
  ctx.fillStyle="#d3ccba";ctx.fillRect(p.x-22,p.y-17,18,25);ctx.fillStyle="#918b80";ctx.fillRect(p.x+4,p.y-13,22,21);
  ctx.fillStyle="#9f8b57";ctx.font="bold 7px monospace";ctx.textAlign="center";ctx.fillText("HANDOFF TABLE",p.x,p.y+20);ctx.textAlign="left";
 }
-function serverRack(x,y){ctx.fillStyle="#101415";ctx.fillRect(x-22,y,32,145);ctx.strokeStyle="#333b3b";ctx.strokeRect(x-22,y,32,145);for(let i=0;i<11;i++){ctx.fillStyle=i%3===0?C.green:"#263232";ctx.fillRect(x-16,y+8+i*12,4,3);ctx.fillStyle="#343b3c";ctx.fillRect(x-7,y+8+i*12,10,3)}}
-function plant(x,y){ctx.fillStyle="#4a3524";ctx.fillRect(x-9,y+22,18,16);ctx.fillStyle="#314b32";ctx.fillRect(x-3,y,6,25);ctx.fillRect(x-14,y+4,12,6);ctx.fillRect(x+2,y+8,14,6);ctx.fillRect(x-10,y-5,9,8)}
+function serverRack(x,y){ctx.fillStyle="#081a2d";ctx.fillRect(x-22,y,32,145);ctx.strokeStyle="#1b5875";ctx.strokeRect(x-22,y,32,145);for(let i=0;i<11;i++){ctx.fillStyle=i%3===0?C.green:"#263232";ctx.fillRect(x-16,y+8+i*12,4,3);ctx.fillStyle="#22617b";ctx.fillRect(x-7,y+8+i*12,10,3)}}
+function plant(x,y){ctx.fillStyle="#12324a";ctx.fillRect(x-9,y+22,18,16);ctx.fillStyle="#175b68";ctx.fillRect(x-3,y,6,25);ctx.fillRect(x-14,y+4,12,6);ctx.fillRect(x+2,y+8,14,6);ctx.fillRect(x-10,y-5,9,8)}
 function drawAgent(a){
  const x=Math.round(a.x),y=Math.round(a.y),moving=Math.hypot(a.tx-a.x,a.ty-a.y)>2,stride=moving?(Math.sin(performance.now()/95+a.x)>.0?2:-2):0;
  ctx.globalAlpha=.14;ctx.fillStyle=a.color;ctx.fillRect(x-18,y+20,36,4);ctx.globalAlpha=1;
@@ -372,7 +412,7 @@ function interactions(){
  agents.forEach(a=>{if(a.state==="working"||a.state==="reviewing"){ctx.fillStyle="#080908e8";ctx.fillRect(a.x-15,a.y-37,30,11);ctx.fillStyle=a.color;for(let i=0;i<3;i++)ctx.fillRect(a.x-7+i*7,a.y-33,3,3)}});
  for(let i=0;i<agents.length;i++)for(let j=i+1;j<agents.length;j++){const a=agents[i],b=agents[j],d=Math.hypot(a.x-b.x,a.y-b.y);if(d<122&&(a.zone==="core"||b.zone==="core")){const x=(a.x+b.x)/2,y=Math.min(a.y,b.y)-43,t=(performance.now()/1100)%1,px=a.x+(b.x-a.x)*t,py=a.y-15+(b.y-a.y)*t;ctx.strokeStyle="#8b8069";ctx.setLineDash([2,4]);ctx.beginPath();ctx.moveTo(a.x,a.y-15);ctx.lineTo(b.x,b.y-15);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#e0cf8a";ctx.fillRect(px-3,py-3,6,6);ctx.fillStyle="#080908";ctx.fillRect(x-31,y,62,13);ctx.fillStyle="#d2c598";ctx.font="bold 7px monospace";ctx.textAlign="center";ctx.fillText("LIVE HANDOFF",x,y+9);ctx.textAlign="left"}}
 }
-function draw(){const w=canvas.clientWidth,h=canvas.clientHeight;ctx.clearRect(0,0,w,h);const t=transform();ctx.save();ctx.translate(t.ox,t.oy);ctx.scale(t.s,t.s);room();furniture();particles();drawCommSignals();drawArtifactPackets();agents.forEach(drawAgent);interactions();ctx.restore()}
+function draw(){const w=canvas.clientWidth,h=canvas.clientHeight;ctx.clearRect(0,0,w,h);const t=transform();ctx.save();ctx.translate(t.ox,t.oy);ctx.scale(t.s,t.s);room();furniture();particles();drawCommSignals();drawArtifactPackets();interactions();ctx.restore()}
 function tick(now){
  const dt=Math.min(40,now-state.last);state.last=now;
  if(state.running&&!state.approval){
@@ -389,6 +429,28 @@ function tick(now){
  ambient(now);move(dt);draw();requestAnimationFrame(tick);
 }
 function canvasClick(e){const r=canvas.getBoundingClientRect(),t=transform(),x=(e.clientX-r.left-t.ox)/t.s,y=(e.clientY-r.top-t.oy)/t.s,a=agents.find(q=>Math.hypot(q.x-x,q.y-y)<30);if(a)return select(a.id);const z=zones.find(q=>x>=q.x&&x<=q.x+q.w&&y>=q.y&&y<=q.y+q.h);if(z){const box=$("#selection"),crew=agents.filter(a=>a.zone===z.id).length;box.querySelector("span").textContent="STATION ZONE";box.querySelector("b").textContent=z.name;box.querySelector("p").textContent=crew+" crew assigned · "+z.type.toUpperCase()+" subsystem online.";box.style.borderColor=z.color;box.querySelector("span").style.color=z.color}}
+function robotAnswer(text){
+ const normalized=text.toLowerCase().replace(/[!?.,]/g," ").replace(/\s+/g," ").trim();let reply;
+ if(/привет|здравствуй|добрый день/.test(normalized)&&(/дела|результат|состояни/.test(normalized)||normalized.length<70)){
+  const result=state.complete?"все объявления опубликованы и проверены":state.approval?"пакет готов и ждёт вашего решения":state.running?"миссия выполняется по плану":"система готова к запуску";
+  reply=`Привет, Валентина, всё отлично! Сегодня мы сделали: ${result}. В ленте ${state.count} событий, артефактов ${state.artifacts}, порталов ${state.mission.portals.length}.`;
+ }else if(/статус|как там|результат/.test(normalized)) reply=`Статус командного пункта: ${state.complete?"миссия завершена":"миссия в работе"}. Агентов онлайн: 7 из 7. Порталов: ${state.mission.portals.length}.`;
+ else if(/запусти|старт|начни/.test(normalized)){start();reply="Принято. Запускаю миссию публикации и передаю задачу агентам."}
+ else if(/пауза|останов/.test(normalized)){pause();reply="Поняла. Приостанавливаю выполнение миссии."}
+ else reply="Я на связи, Валентина. Могу сообщить статус миссии, запустить публикацию или поставить её на паузу.";
+ $("#commandReply").textContent=reply;$("#voiceStateText").textContent="V SHARK IS RESPONDING";state.robotSpeaking=true;event("v shark","Command point reply",reply,"cyan");
+ if("speechSynthesis"in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(reply);u.lang="ru-RU";u.rate=.95;u.pitch=.9;u.onend=()=>{state.robotSpeaking=false;$("#voiceStateText").textContent="READY FOR TEXT OR VOICE";};speechSynthesis.speak(u)}else setTimeout(()=>{state.robotSpeaking=false;$("#voiceStateText").textContent="READY FOR TEXT OR VOICE"},Math.min(7000,reply.length*45));
+}
+function sendCommand(){const input=$("#commandInput"),text=input&&input.value.trim();if(!text)return;robotAnswer(text);input.value=""}
+function bindCommandPoint(){
+ const input=$("#commandInput"),send=$("#sendCommand"),voice=$("#voiceCommand");if(!input)return;
+ send.onclick=sendCommand;input.onkeydown=e=>{if(e.key==="Enter")sendCommand()};
+ const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!Recognition){voice.title="Voice recognition is not supported in this browser";voice.onclick=()=>{ $("#commandReply").textContent="Голосовой ввод не поддерживается этим браузером. Используйте текстовое поле."};return}
+ const recognition=new Recognition();recognition.lang="ru-RU";recognition.interimResults=false;recognition.maxAlternatives=1;
+ voice.onclick=()=>{try{recognition.start();voice.classList.add("listening");$("#voiceState").className="active";$("#voiceStateText").textContent="LISTENING…"}catch{}};
+ recognition.onresult=e=>{input.value=e.results[0][0].transcript;sendCommand()};recognition.onerror=()=>{$("#voiceStateText").textContent="VOICE ERROR — TRY AGAIN"};recognition.onend=()=>{voice.classList.remove("listening");if(!state.robotSpeaking){$("#voiceState").className="";$("#voiceStateText").textContent="READY FOR TEXT OR VOICE"}};
+}
 function clock(){$("#clock").textContent=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Warsaw",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(new Date())}
 function transportState(status,detail={}){
  const badge=$("#connectionBadge"),label=$("#connectionText"),bus=$("#eventBusStatus"),footer=$("#transportStatus"),session=(detail.sessionId||bridge&&bridge.sessionId||"session_pending").split("_").pop().slice(-6).toUpperCase();
@@ -406,10 +468,13 @@ function bindTransport(){
  bridge.addEventListener("ack",e=>transportState("online",{sessionId:e.detail.sessionId,mode:e.detail.mode,rtt:e.detail.latency,queueDepth:bridge.snapshot().queueDepth}));
  bridge.connect().then(info=>event("grok","Mock transport connected","Persistent local session "+info.sessionId.split("_").pop().toUpperCase()+" is receiving commands and telemetry.","green")).catch(()=>transportState("offline"));
 }
+function updateFieldCounts(){const title=$("#inTitle"),desc=$("#inDescription");if($("#titleCount"))$("#titleCount").textContent=(title&&title.value.length)||0;if($("#descriptionCount"))$("#descriptionCount").textContent=(desc&&desc.value.length)||0}
+bindPhotoUpload();["#inTitle","#inDescription"].forEach(sel=>{const el=$(sel);if(el)el.addEventListener("input",updateFieldCounts)});updateFieldCounts();
 $("#startBtn").onclick=start;$("#pauseBtn").onclick=pause;$("#resetBtn").onclick=()=>reset();$("#setupBtn").onclick=()=>{loadSetupForm();$("#setupDialog").showModal()};$("#saveSetup").onclick=saveSetupForm;$("#speed").onchange=e=>{state.speed=Number(e.target.value);event("system","Timeline speed changed","System is running at "+state.speed+"×.","amber")};$("#approveBtn").onclick=()=>resolve(true);$("#rejectBtn").onclick=()=>resolve(false);$("#inspectBtn").onclick=()=>$("#inspectDialog").showModal();$("#clearFeed").onclick=()=>{$("#eventFeed").innerHTML="";state.count=0;$("#eventCount").textContent="00 EVENTS"};canvas.onclick=canvasClick;window.onresize=resize;if("ResizeObserver"in window)new ResizeObserver(resize).observe(canvas);
 window.onkeydown=e=>{if(e.code==="Space"&&e.target.tagName!=="BUTTON"){e.preventDefault();state.running?pause():start()}if(e.key.toLowerCase()==="r")reset()};
 bindLedger();
 bindTransport();
+bindCommandPoint();
 renderRoster();renderMissionInput();resize();select("helm");stage(null,0,"Publish "+state.mission.seller.name.split(" ")[0]+"'s property on "+state.mission.portals.length+" portals","Register accounts, write SEO listings, audit, publish, and verify live links.");document.querySelectorAll("#stages span").forEach(n=>n.classList.remove("active","done"));
 event("system","Station online","Room telemetry, pathing, and the six-minute listing clock are live.","green");event("vault","Portal registry mounted","Portal account list and credential vault are ready for the seller brief.","cyan");event("airlock","Safety boundary armed","Listing publication requires one operator decision.","amber");
 clock();setInterval(clock,1000);requestAnimationFrame(tick);
