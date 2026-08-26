@@ -1,6 +1,7 @@
 (() => {
 "use strict";
 const $=s=>document.querySelector(s), canvas=$("#stationCanvas"), ctx=canvas.getContext("2d");
+const robotHead=new Image();robotHead.src="robot-head.png";
 const C={helm:"#ff355f",forge:"#ffb52e",sentinel:"#b94cff",scout:"#38ff4b",archive:"#16e7ff",relay:"#2489ff",warden:"#ef38ff",green:"#45ff64",amber:"#ffb52e",red:"#ff355f",cyan:"#16e7ff",muted:"#647892"};
 const bridge=window.portalLink||null;
 const ledger=window.listingLedger||null,artifactPackets=[],commSignals=[];
@@ -327,6 +328,7 @@ function room(){
 }
 function drawHologramHead(){
  const t=performance.now()/1000,cx=450,cy=300;
+ if(robotHead.complete&&robotHead.naturalWidth){ctx.save();ctx.globalAlpha=.95;ctx.globalCompositeOperation="screen";ctx.drawImage(robotHead,285,112,330,420);ctx.globalAlpha=1;ctx.restore();return}
  ctx.save();ctx.globalCompositeOperation="lighter";
  // projector rings
  for(let r=72;r<112;r+=12){ctx.strokeStyle=`rgba(32,236,255,${.14-(r-72)/500})`;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(cx,cy+111,r,9,0,0,Math.PI*2);ctx.stroke()}
