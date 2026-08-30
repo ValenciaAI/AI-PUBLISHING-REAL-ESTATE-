@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>V SHARK — Estate Ops Publish</title>
-  <link rel="stylesheet" href="hologram.css?v=shark-2">
+  <link rel="stylesheet" href="hologram.css?v=ops-3">
 </head>
 <body>
   <div class="scanlines"></div>
@@ -167,11 +167,11 @@
           <label>Tytuł <small><span id="titleCount">0</span>/70</small>
             <input id="inTitle" maxlength="70" value="Sprzedam bezpośrednio Hotel i Restauracja Dolina Leśna">
           </label>
-          <label>Cena <input id="inPrice" value="4500000"> zł</label>
-          <label>Powierzchnia użytkowa m² <input id="inArea" value="2280"></label>
-          <label>Powierzchnia działki m² <input id="inPlot" value="21487"></label>
+          <label>Cena <input id="inPrice" type="number" min="0" step="1" value="4500000"> zł</label>
+          <label>Powierzchnia użytkowa m² <input id="inArea" type="number" min="0" step="0.01" value="2280"></label>
+          <label>Powierzchnia działki m² <input id="inPlot" type="number" min="0" step="0.01" value="21487"></label>
           <p class="hint">Cena za m² (użytkowa): <b id="ppm">1 974 zł / m²</b></p>
-          <label>YouTube URL <input id="inVideo" type="url" placeholder="https://youtube.com/..."></label>
+          <label>YouTube URL <input id="inVideo" type="text" placeholder="https://youtube.com/..."></label>
           <label>Opis <small><span id="descriptionCount">0</span>/5000</small>
             <textarea id="inDescription" maxlength="5000" rows="8">Sprzedam bezpośrednio – bez pośredników i prowizji
 
@@ -246,6 +246,6 @@ Nieruchomosci.pl</textarea>
 
   <script src="portal-adapter.js"></script>
   <script src="listing-ledger.js"></script>
-  <script src="ops-engine.js?v=shark-2"></script>
+  <script src="ops-engine.js?v=ops-3"></script>
 </body>
 </html>
