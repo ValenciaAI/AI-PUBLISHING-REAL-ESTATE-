@@ -145,6 +145,8 @@ body {
     radial-gradient(ellipse at 50% 70%, rgba(62,231,255,.12), transparent 50%),
     linear-gradient(180deg, rgba(4,20,40,.4), rgba(2,8,18,.8));
 }
+.holo-stage.mission-live .floor-grid { animation: gridpulse 2.8s ease-in-out infinite; }
+@keyframes gridpulse { 50% { opacity: .55; } }
 .floor-grid {
   position: absolute; left: -10%; right: -10%; bottom: -20%; height: 55%;
   background:
