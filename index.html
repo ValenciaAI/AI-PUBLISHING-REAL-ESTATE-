@@ -1,146 +1,182 @@
 <!doctype html>
-<html lang=en>
+<html lang="pl">
 <head>
-  <meta charset=UTF-8>
-  <meta name=viewport content=width=device-width,initial-scale=1>
-  <title>Estate Ops $Publish — Autonomous Listing Operations</title>
-  <link rel="stylesheet" href="styles.css?v=reference-3">
-  <link rel="stylesheet" href="theme-muted.css?v=reference-3">
-  <link rel="stylesheet" href="reference-rebuild.css?v=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>V SHARK — Estate Ops Publish</title>
+  <link rel="stylesheet" href="hologram.css">
 </head>
 <body>
-  <div class=scanlines></div>
-  <div class=app>
-    <header class=topbar>
-      <div class=brand>
-        <div class=brand-mark><i></i></div>
-        <div><span>REAL ESTATE OPERATIONS</span><h1>ESTATE OPS $PUBLISH</h1></div>
-        <b id=connectionBadge class="live connecting" data-mode=mock><i></i><span id=connectionText>LINKING</span></b>
+  <div class="scanlines"></div>
+  <div class="particles" id="particles"></div>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"><i></i></div>
+        <div>
+          <span data-i18n="brand.sub">REAL ESTATE OPERATIONS</span>
+          <h1>ESTATE OPS PUBLISH</h1>
+        </div>
+        <b id="connectionBadge" class="live connecting"><i></i><span id="connectionText">LINKING</span></b>
       </div>
-      <div class="creator-tag"><small>CREATOR 07</small><strong>V SHARK 🦈</strong></div>
-      <div class=metrics>
-        <div><span>CREW</span><b>7 / 7</b></div>
-        <div><span>PORTALS</span><b id=portalMetric>06</b></div>
-        <div><span>AIRLOCK</span><b id=airlockMetric>CLEAR</b></div>
-        <div><span>SPEND</span><b id=spendMetric>$0.00</b></div>
+      <div class="vshark-title">
+        <small>ORCHESTRATOR</small>
+        <strong>V SHARK 🦈</strong>
       </div>
-      <div class=clock><span>NIGHT WATCH</span><b id=clock>00:00:00</b><small>EUROPE / WARSAW</small></div>
+      <div class="metrics">
+        <div><span>ERZM</span><b id="erzmMetric">07</b></div>
+        <div><span>PORTALS</span><b id="portalMetric">06</b></div>
+        <div><span>AIRLOCK</span><b id="airlockMetric">CLEAR</b></div>
+        <div><span>SPEND</span><b id="spendMetric">$0.00</b></div>
+      </div>
+      <div class="clock">
+        <span>MISSION CLOCK</span>
+        <b id="clock">00:00:00</b>
+        <small id="netStatus">ONLINE</small>
+      </div>
+      <button class="lang-btn" id="langBtn" type="button">PL / EN</button>
     </header>
+
     <main class="grid">
-      <aside class="panel roster">
-        <div class="panel-head"><div><span>CREW MANIFEST</span><h2>Agents</h2></div><b>7 ONLINE</b></div>
-        <div id="agentRoster" class="agent-list"></div>
-        <div class="health">
-          <div><span>STATION HEALTH</span><b>98.7%</b></div><i><em></em></i>
-          <p><span><i class="dot cyan"></i>Event bus</span><b id=eventBusStatus>LINKING</b></p>
-          <p><span><i class="dot green"></i>Portal vault</span><b>SYNCED</b></p>
-          <p><span><i class="dot amber"></i>Routines</span><b>03</b></p>
-        </div>
+      <aside class="col left">
+        <section class="glass">
+          <div class="panel-head"><span>DECK 07</span><h2 data-i18n="deck">Operations Floor</h2></div>
+          <p class="muted" data-i18n="deck.copy">Holographic publish floor · Warsaw node</p>
+          <div class="mini-stats">
+            <div><span>THROUGHPUT</span><b id="throughput">0 / min</b></div>
+            <div><span>QUEUE</span><b id="queueDepth">0</b></div>
+          </div>
+          <canvas id="spark" class="spark" width="280" height="64"></canvas>
+        </section>
+        <section class="glass">
+          <div class="panel-head"><span>LISTING LEDGER</span><h2 id="ledgerCount">0 ARTIFACTS</h2></div>
+          <p class="muted" id="ledgerIntegrity">CHAIN READY</p>
+          <button class="ghost" id="ledgerMini" type="button" data-i18n="ledger.open">Open ledger</button>
+        </section>
+        <section class="glass comms">
+          <div class="panel-head"><span>LIVE AGENT COMMS</span><b id="commBus">BUS READY</b></div>
+          <div id="commItems" class="comm-items"></div>
+        </section>
+        <section class="glass">
+          <div class="panel-head"><span>FLOOR MONITOR</span><h2 data-i18n="selected">Selected agent</h2></div>
+          <div id="selection" class="selection">
+            <img id="selImg" alt="">
+            <div><b id="selName">HELM</b><p id="selTask">Orchestrator idle</p></div>
+          </div>
+        </section>
       </aside>
-      <section class="panel station">
-        <div class="station-head">
-          <div><span>DECK 07 · PUBLISHING FLOOR</span><h2>Operations Floor</h2></div>
-          <div class="controls">
-            <button id="setupBtn" title="Enter seller brief, portal accounts and mandatory data">✎ INPUT</button>
-            <button id="startBtn" class="primary">▶ Start listing</button>
-            <button id="pauseBtn">Ⅱ</button><button id="resetBtn">↺</button>
-            <select id="speed" aria-label="Mission speed"><option value="1">1x</option><option value="2">2x</option><option value="4">4x</option><option value="10">10x</option></select>
+
+      <section class="center">
+        <div class="holo-stage">
+          <div class="floor-grid"></div>
+          <div class="rings">
+            <i></i><i></i><i></i>
           </div>
-        </div>
-        <div class="canvas-wrap">
-          <canvas id="stationCanvas"></canvas>
-          <section class="command-console" aria-label="Command point conversation">
-            <div class="command-status"><i id="voiceState"></i><span>COMMAND POINT</span><b id="voiceStateText">READY FOR TEXT OR VOICE</b></div>
-            <div class="command-row"><input id="commandInput" type="text" maxlength="500" placeholder="Talk to V SHARK…" autocomplete="off"><button id="sendCommand" type="button">SEND</button><button id="voiceCommand" type="button" aria-label="Start voice command">◉ VOICE</button></div>
-            <p id="commandReply" class="command-reply" aria-live="polite">Say “Привет, моя хорошая, как у нас дела?” or type a command.</p>
-          </section>
-          <button id="ledgerMini" class="ledger-mini" type="button">
-            <span>LISTING LEDGER</span><b id="ledgerCount">0 ARTIFACTS</b><em id="ledgerIntegrity">CHAIN READY</em>
-          </button>
-          <aside id="commPanel" class="comm-panel">
-            <header><span>LIVE AGENT COMMS</span><b id="commBus">BUS READY</b></header>
-            <div id="commItems" class="comm-items">
-              <article class="comm-empty"><i></i><p>Encrypted handoff channels standing by.</p></article>
-            </div>
-          </aside>
-          <aside id="linkPanel" class="link-panel" hidden>
-            <header><span>VERIFIED PUBLICATIONS</span><b id="linkCount">0 LINKS</b></header>
-            <div id="linkItems" class="link-items"></div>
-          </aside>
-          <aside id="ledgerDrawer" class="ledger-drawer" hidden>
-            <header><div><span>EVENT-SOURCED MEMORY</span><h2>Listing Ledger</h2></div><button id="closeLedger" type="button">×</button></header>
-            <div class="ledger-summary">
-              <span>EVENTS<b id="ledgerEvents">0</b></span><span>ARTIFACTS<b id="ledgerArtifacts">0</b></span><span>INTEGRITY<b id="ledgerChain">READY</b></span>
-            </div>
-            <div id="ledgerDetail" class="ledger-detail"><span>SELECT AN ARTIFACT</span><p>Inspect its version, creator, SHA-256 hash, audit state, and parent lineage.</p></div>
-            <div class="ledger-section-title"><span>ARTIFACT LINEAGE</span><b id="ledgerPolicy">POLICY IDLE</b></div>
-            <div id="ledgerItems" class="ledger-items"></div>
-          </aside>
-          <div id="ledgerToast" class="ledger-toast" hidden>
-            <span id="ledgerToastEyebrow">ARTIFACT SEALED</span>
-            <b id="ledgerToastTitle">LISTING VARIANT · v1</b>
-            <em id="ledgerToastMeta">SHA-256 VERIFIED · FORGE → REGISTRY</em>
+          <img class="shark" src="assets/vshark.png" alt="V SHARK holographic orchestrator">
+          <div class="shark-glow"></div>
+          <div class="orbit left-orbit glass data-card" id="listingPreview">
+            <span>CURRENT LISTING</span>
+            <h3 id="cardTitle">Hotel Dolina Leśna</h3>
+            <p id="cardMeta">4 500 000 zł · 2280 m²</p>
+            <div class="thumbs" id="photoThumbs"></div>
           </div>
-          <div id="artifactFlow" class="artifact-flow" aria-label="Listing release pipeline">
-            <span data-flow="intake"><i></i><small>INTAKE</small><b id="flowIntake">WAITING</b></span>
-            <em>→</em>
-            <span data-flow="register"><i></i><small>REGISTER</small><b id="flowRegister">LOCKED</b></span>
-            <em>→</em>
-            <span data-flow="content"><i></i><small>CONTENT</small><b id="flowContent">LOCKED</b></span>
-            <em>→</em>
-            <span data-flow="compliance"><i></i><small>COMPLIANCE</small><b id="flowCompliance">LOCKED</b></span>
-            <em>→</em>
-            <span data-flow="publish"><i></i><small>PUBLISH</small><b id="flowPublish">LOCKED</b></span>
-            <em>→</em>
-            <span data-flow="verify"><i></i><small>VERIFY</small><b id="flowVerify">LOCKED</b></span>
+          <div class="orbit right-orbit glass data-card">
+            <span>MISSION TELEMETRY</span>
+            <h3 id="cardStage">STANDBY</h3>
+            <p id="cardPortals">6 portals armed</p>
+            <ul class="tele" id="teleList"></ul>
           </div>
-          <div id="selection" class="selection"><span>SELECTED AGENT</span><b>HELM</b><p>Coordinating from the Command Desk.</p></div>
-          <div class="legend"><span><i class="dot green"></i>working</span><span><i class="dot amber"></i>handoff</span><span><i class="dot red"></i>approval</span></div>
+          <div class="progress-ring" id="ringWrap">
+            <svg viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" class="ring-bg"/>
+              <circle cx="60" cy="60" r="52" class="ring-fg" id="ringFg"/>
+            </svg>
+            <div class="ring-label"><b id="ringPct">0%</b><small data-i18n="mission">MISSION</small></div>
+          </div>
         </div>
       </section>
-      <aside class="panel feed">
-        <div class="panel-head"><div><span>EVENT STREAM</span><h2>Live Feed</h2></div><b id="eventCount">03 EVENTS</b></div>
-        <div id="eventFeed" class="events"></div>
-        <div class="feed-foot"><span><i></i><em id=transportStatus>Opening portal transport</em></span><button id="clearFeed">CLEAR</button></div>
+
+      <aside class="col right">
+        <section class="glass crew">
+          <div class="panel-head"><span>CREW MANIFEST</span><b>8 ONLINE</b></div>
+          <div id="agentRoster" class="agent-list"></div>
+        </section>
+        <section class="glass feed">
+          <div class="panel-head"><span>EVENT STREAM</span><b id="eventCount">0 EVENTS</b></div>
+          <div id="eventFeed" class="events"></div>
+        </section>
+        <section class="glass airlock" id="airlockPanel">
+          <div id="approvalIdle">
+            <span>APPROVAL AIRLOCK</span>
+            <h2 data-i18n="airlock.idle">Standing by</h2>
+            <p data-i18n="airlock.copy">Critical publish actions stop here.</p>
+          </div>
+          <div id="approvalRequest" hidden>
+            <span class="alert">DECISION REQUIRED</span>
+            <h2 id="approvalTitle">Publish listings</h2>
+            <label>Comment <input id="approvalNote" maxlength="200" placeholder="optional"></label>
+            <div class="actions">
+              <button id="rejectBtn" type="button">REJECT</button>
+              <button id="approveBtn" class="primary" type="button">APPROVE</button>
+            </div>
+          </div>
+        </section>
       </aside>
-      <section class="panel mission">
-        <div class="mission-id"><span>ACTIVE MISSION</span><b>RE-042</b><em id="riskBadge">LOW RISK</em></div>
-        <div class="mission-main">
-          <div class="mission-copy"><div><h2 id="missionTitle">Publish the 2-bedroom apartment on 6 portals</h2><p id="missionSub">Register accounts, write SEO listings, audit, publish, and verify live links.</p></div><b id="progressLabel">0% · 06:00 left</b></div>
-          <div class="progress"><i id="progressBar"></i></div>
-          <div id="stages" class="stages"><span>INTAKE</span><span>REGISTER</span><span>CONTENT</span><span>COMPLIANCE</span><span>PUBLISH</span><span>VERIFY</span></div>
-          <div id="inputSummary" class="input-summary">
-            <span>SELLER</span><b id="sumSeller">Anna Kowalska · +48 601 234 567</b>
-            <em id="sumPortals">6 PORTALS</em><em id="sumMandatory">5 MANDATORY FIELDS</em>
-          </div>
-        </div>
-      </section>
-      <section class="panel approval">
-        <div class="airlock-idle" id="approvalIdle"><div class="airlock-icon"><i></i></div><div><span>APPROVAL AIRLOCK</span><h2>Standing by</h2><p>Listing publication will stop here for one human decision.</p></div></div>
-        <div class="approval-request" id="approvalRequest" hidden>
-          <div class="alert"><i>!</i><div><span>DECISION REQUIRED</span><b>Publish 6 real-estate listings</b></div><em>HIGH IMPACT</em></div>
-          <div class="facts"><span>AGENT<b>RELAY</b></span><span>REVERSIBLE<b>YES</b></span><span>TARGET<b>6 PORTALS</b></span></div>
-          <div class="actions"><button id="inspectBtn">Inspect</button><button id="rejectBtn">Reject</button><button id="approveBtn">Approve</button></div>
-        </div>
-      </section>
     </main>
+
+    <footer class="mission-bar glass">
+      <div class="mission-id">
+        <span>ACTIVE MISSION</span>
+        <b>RE-042</b>
+        <em id="riskBadge">LOW RISK</em>
+      </div>
+      <div class="mission-main">
+        <div class="mission-copy">
+          <h2 id="missionTitle">Publish hotel listing across Polish portals</h2>
+          <p id="sellerLine">Anna Konełka · +48 601 221 527</p>
+        </div>
+        <div class="progress"><i id="progressBar"></i></div>
+        <div id="stages" class="stages">
+          <span>REGISTER</span><span>PREPARE</span><span>CONTENT</span><span>COMPLIANCE</span><span>PUBLISH</span><span>VERIFY</span>
+        </div>
+      </div>
+      <div class="mission-controls">
+        <b id="progressLabel">0% · 06:00 left</b>
+        <div class="btns">
+          <button id="setupBtn" type="button">✎ INPUT</button>
+          <button id="startBtn" class="primary" type="button">Start Listing</button>
+          <button id="pauseBtn" type="button">Pause</button>
+          <button id="resetBtn" type="button">Abort</button>
+          <select id="speed"><option value="1">1x</option><option value="2">2x</option><option value="4">4x</option><option value="10">10x</option></select>
+        </div>
+      </div>
+    </footer>
   </div>
 
-  <dialog id="setupDialog"><form method="dialog" class="setup">
-    <header><h2>Mission input — data for the agents</h2><button value="close">×</button></header>
-    <div class="setup-grid">
-      <fieldset>
-        <legend>Seller brief</legend>
-        <label>Name<input id="inSeller" type="text" value="Anna Kowalska"></label>
-        <label>Phone<input id="inPhone" type="text" value="+48 601 234 567"></label>
-        <label>Title <small class="field-count"><span id="titleCount">0</span>/70</small><input id="inTitle" maxlength="70" type="text" value="Sprzedam bezpośrednio Hotel i Restauracja Dolina Leśna"></label>
-        <label>Photos <small class="field-count">up to 20 · drag to set priority</small><input id="inPhotos" type="file" accept="image/*" multiple><div id="photoDrop" class="photo-drop">Drop photos here or click to upload</div><div id="photoPreview" class="photo-preview"></div></label>
-        <label>YouTube video URL<input id="inVideo" type="text" value="https://www.youtube.com/watch?v=RE-APARTMENT-TOUR"></label>
-        <label>Description <small class="field-count"><span id="descriptionCount">0</span>/5000</small><textarea id="inDescription" maxlength="5000" rows="7">Sprzedam bezpośrednio – bez pośredników i prowizji
+  <dialog id="setupDialog">
+    <form method="dialog" class="setup">
+      <header>
+        <h2>Mission Input</h2>
+        <button value="close" type="submit">×</button>
+      </header>
+      <div class="setup-grid">
+        <fieldset>
+          <legend>Seller</legend>
+          <label>Imię sprzedawcy <input id="inSeller" required minlength="2" maxlength="80" value="Anna Konełka"></label>
+          <label>Telefon <input id="inPhone" type="tel" value="+48 601 221 527"></label>
+          <label>Tytuł <small><span id="titleCount">0</span>/70</small>
+            <input id="inTitle" maxlength="70" value="Sprzedam bezpośrednio Hotel i Restauracja Dolina Leśna">
+          </label>
+          <label>Cena <input id="inPrice" value="4500000"> zł</label>
+          <label>Powierzchnia m² <input id="inArea" value="2280"></label>
+          <p class="hint">Cena za m²: <b id="ppm">1 974 zł / m²</b></p>
+          <label>YouTube URL <input id="inVideo" type="url" placeholder="https://youtube.com/..."></label>
+          <label>Opis <small><span id="descriptionCount">0</span>/5000</small>
+            <textarea id="inDescription" maxlength="5000" rows="8">Sprzedam bezpośrednio – bez pośredników i prowizji
 
 Hotel i Restauracja „Dolina Leśna”
 
-Kompleks hotelowo-restauracyjny o dużym potencjale inwestycyjnym i adaptacyjnym, położony na malowniczej działce.
+Kompleks hotelowo-restauracyjny o dużym potencjale inwestycyjnym, położony na malowniczej działce.
 
 Obiekty i powierzchnie
 - Działka: 2,1487 ha (21 487 m²)
@@ -155,60 +191,60 @@ Hotel
 
 Restauracja i przestrzenie eventowe
 - Sala restauracyjna na 120 osób
-- Bar
-- Duża sala kominkowa
-- Sala konferencyjna
-- Jacuzzi i sauna
+- Bar, sala kominkowa, sala konferencyjna, jacuzzi i sauna
 
-Media i infrastruktura
-- Wodociąg miejski
-- Własna oczyszczalnia ścieków
-- Światłowód 300 Mb/s
-- Instalacje solarne
-- Prąd 27 kW
-- Gaz
-
-Idealny obiekt na hotel, restaurację, centrum konferencyjne, ośrodek wypoczynkowy lub dalszy rozwój inwestycyjny.</textarea></label>
-      </fieldset>
-      <fieldset>
-        <legend>Portals (one per line, from the Excel list)</legend>
-        <textarea id="inPortals" rows="6">OLX
+Media: wodociąg, oczyszczalnia, światłowód 300 Mb/s, solar, prąd 27 kW, gaz.</textarea>
+          </label>
+          <label>Zdjęcia (do 20, priorytet drag)
+            <input id="inPhotos" type="file" accept="image/*" multiple>
+            <div id="photoDrop" class="photo-drop">Drop photos or click</div>
+            <div id="photoPreview" class="photo-preview"></div>
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Lokalizacja i parametry</legend>
+          <label>Województwo <input id="inWoj" value="lubuskie"></label>
+          <label>Powiat <input id="inPowiat" value="słubicki"></label>
+          <label>Miasto / Gmina <input id="inCity" value="Ośno Lubuskie"></label>
+          <label>Kod pocztowy <input id="inZip" value="69-220"></label>
+          <label>Dzielnica / Wieś <input id="inDistrict" value="Dolina Leśna"></label>
+          <label>Ulica <input id="inStreet" value="Dolina Leśna"></label>
+          <label>Rynek
+            <select id="inMarket"><option>Wtórny</option><option>Pierwotny</option></select>
+          </label>
+          <label>Rodzaj nieruchomości <input id="inType" value="obiekt"></label>
+          <label>Przeznaczenie <input id="inUse" value="handlowy"></label>
+          <label>Liczba pomieszczeń <input id="inRooms" value="80"></label>
+          <label>Media <input id="inMedia" value="prąd, woda, gaz, internet, TV"></label>
+          <label>Excel portali (.xlsx)
+            <input id="inExcel" type="file" accept=".xlsx,.xls,.csv,text/csv">
+          </label>
+          <p class="hint">Lub lista ręczna (portal | login | hasło)</p>
+          <textarea id="inPortals" rows="6">OLX
 Otodom
 Morizon
 Gratka
 Domiporta
 Nieruchomosci.pl</textarea>
-        <p class="hint">Accounts: one line per portal as <b>portal | login | password</b>. Leave empty to auto-register new profiles.</p>
-        <textarea id="inCreds" rows="4" placeholder="OLX | my.login@mail.com | ****"></textarea>
-      </fieldset>
-      <fieldset class="mandatory">
-        <legend>Data that must appear in EVERY listing (label = value, one per line)</legend>
-        <textarea id="inMandatory" rows="14">Cena = 4500000 zł
-Cena za m² = 1974 zł / m2
-Województwo = lubuskie
-Powiat = słubicki
-Miasto / Gmina = Ośno Lubuskie
-Kod pocztowy = 69-220
-Dzielnica / Wieś = Dolina Leśna
-Ulica = Dolina Leśna
-Rynek = Wtórny
-Rodzaj nieruchomości = obiekt
-Powierzchnia użytkowa = 2280 m2
-Przeznaczenie = handlowy
-Liczba pomieszczeń = 80
-Media = prąd, woda, ciepła woda własna, gaz, telefon, internet, TV kablowa</textarea>
-      </fieldset>
-    </div>
-    <footer><button value="close">Cancel</button><button id="saveSetup" class="primary">Save &amp; use for mission</button></footer>
-  </form></dialog>
+          <textarea id="inCreds" rows="4" placeholder="OLX | login | password"></textarea>
+        </fieldset>
+      </div>
+      <footer>
+        <button value="close" type="submit">Cancel</button>
+        <button id="saveSetup" class="primary" type="button">Save & use for mission</button>
+      </footer>
+    </form>
+  </dialog>
 
-  <dialog id="inspectDialog"><form method="dialog">
-    <header><h2>Action inspection</h2><button value="close">×</button></header>
-    <section><p><b>Target:</b> Public real-estate portals (from the portal list).</p><p><b>Payload:</b> SEO listing pack — selling title, portal variants, and media.</p><p><b>Rollback:</b> Published listings can be deactivated and removed.</p><p><b>Evidence:</b> 6 audited variants, account ledger, and 6 passed compliance checks.</p><p><b>After approval:</b> Warden verifies each listing is live and compiles the published-link list.</p></section>
-    <footer><button value="close" class="primary">Return to airlock</button></footer>
-  </form></dialog>
-  <script src="portal-adapter.js?v=reference-3"></script>
-  <script src="listing-ledger.js?v=reference-3"></script>
-  <script src="app.js?v=reference-3"></script>
+  <dialog id="ledgerDrawer">
+    <form method="dialog" class="ledger">
+      <header><h2>Listing Ledger</h2><button value="close">×</button></header>
+      <div id="ledgerItems" class="ledger-items"></div>
+    </form>
+  </dialog>
+
+  <script src="portal-adapter.js"></script>
+  <script src="listing-ledger.js"></script>
+  <script src="ops-engine.js"></script>
 </body>
 </html>
