@@ -157,26 +157,50 @@ body {
 .rings { position: absolute; inset: 12% 18% 28%; pointer-events: none; }
 .rings i {
   position: absolute; inset: 0; border: 1px solid rgba(62,231,255,.25); border-radius: 50%;
-  animation: spin 18s linear infinite;
+  animation: none;
 }
-.rings i:nth-child(2) { inset: 8%; animation-duration: 26s; animation-direction: reverse; border-color: rgba(255,79,216,.2); }
-.rings i:nth-child(3) { inset: 16%; animation-duration: 12s; }
+.rings i:nth-child(2) { inset: 8%; border-color: rgba(255,79,216,.2); }
+.rings i:nth-child(3) { inset: 16%; }
+.holo-stage.mission-live .rings i { animation: spin 18s linear infinite; }
+.holo-stage.mission-live .rings i:nth-child(2) { animation-duration: 10s; animation-direction: reverse; }
+.holo-stage.mission-live .rings i:nth-child(3) { animation-duration: 6s; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .shark {
-  position: absolute; left: 50%; top: 42%; width: min(58%, 640px);
+  position: absolute; left: 50%; top: 42%; width: min(62%, 680px);
   transform: translate(-50%, -50%);
-  animation: breathe 4.2s ease-in-out infinite;
-  filter: drop-shadow(0 0 28px rgba(62,231,255,.55));
+  animation: none;
+  filter: drop-shadow(0 0 22px rgba(62,231,255,.45));
   pointer-events: none;
+  background: transparent;
 }
-@keyframes breathe { 50% { transform: translate(-50%, -52%) scale(1.03); } }
+.holo-stage.mission-live .shark {
+  animation: swim 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 36px rgba(62,231,255,.9)) drop-shadow(0 0 18px rgba(255,79,216,.45));
+}
+.holo-stage.mission-paused .shark {
+  animation: breathe 3.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 16px rgba(255,209,102,.5));
+}
+@keyframes breathe { 50% { transform: translate(-50%, -52%) scale(1.02); } }
+@keyframes swim {
+  0% { transform: translate(-50%, -50%) rotate(-2deg) scale(1); }
+  35% { transform: translate(-46%, -54%) rotate(3deg) scale(1.05); }
+  70% { transform: translate(-54%, -48%) rotate(-4deg) scale(1.02); }
+  100% { transform: translate(-50%, -50%) rotate(-2deg) scale(1); }
+}
 .shark-glow {
   position: absolute; left: 50%; top: 48%; width: 40%; height: 18%;
   transform: translate(-50%, 0);
-  background: radial-gradient(ellipse, rgba(62,231,255,.35), transparent 70%);
+  background: radial-gradient(ellipse, rgba(62,231,255,.2), transparent 70%);
   filter: blur(12px);
+  opacity: .4;
 }
+.holo-stage.mission-live .shark-glow {
+  opacity: 1;
+  animation: glowpulse 1.6s ease-in-out infinite;
+}
+@keyframes glowpulse { 50% { transform: translate(-50%, 0) scale(1.25); opacity: .85; } }
 
 .data-card { position: absolute; top: 14%; width: 230px; padding: 12px; }
 .left-orbit { left: 18px; }

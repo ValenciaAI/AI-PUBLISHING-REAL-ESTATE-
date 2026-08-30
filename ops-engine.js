@@ -46,6 +46,7 @@
       title: "Sprzedam bezpośrednio Hotel i Restauracja Dolina Leśna",
       price: 4500000,
       area: 2280,
+      plot: 21487,
       description: $("inDescription") ? $("inDescription").value : "",
       youtube: "",
       woj: "lubuskie", powiat: "słubicki", city: "Ośno Lubuskie", zip: "69-220",
@@ -120,7 +121,7 @@
   function applyMissionToUI() {
     const m = state.mission;
     $("cardTitle").textContent = m.title.slice(0, 42);
-    $("cardMeta").textContent = Number(m.price).toLocaleString("pl-PL") + " zł · " + m.area + " m² · " + ppm();
+    $("cardMeta").textContent = Number(m.price).toLocaleString("pl-PL") + " zł · " + m.area + " m² · działka " + (m.plot || "—") + " m² · " + ppm();
     $("sellerLine").textContent = m.seller + " · " + m.phone;
     $("missionTitle").textContent = m.title;
     $("portalMetric").textContent = String(state.portals.length).padStart(2, "0");
@@ -129,9 +130,17 @@
     $("teleList").innerHTML = [
       "WOJ " + m.woj,
       "CITY " + m.city,
+      "PLOT " + (m.plot || "—") + " m²",
       "ROOMS " + m.rooms,
       "MEDIA " + (m.media || "").slice(0, 28)
     ].map((x) => `<li>${x}</li>`).join("");
+  }
+
+  function setHoloMode(mode) {
+    const stage = document.querySelector(".holo-stage");
+    if (!stage) return;
+    stage.classList.remove("mission-live", "mission-paused");
+    if (mode) stage.classList.add(mode);
   }
 
   function setStage(i) {
@@ -142,9 +151,11 @@
 
   function tick(ts) {
     if (!state.running || state.paused || state.waitingApproval) {
+      if (state.paused || state.waitingApproval) setHoloMode("mission-paused");
       requestAnimationFrame(tick);
       return;
     }
+    setHoloMode("mission-live");
     if (!state.last) state.last = ts;
     const dt = (ts - state.last) * state.speed;
     state.last = ts;
@@ -180,6 +191,7 @@
 
     if (state.progress >= 1) {
       state.running = false;
+      setHoloMode("");
       log("VERIFY", "All live links compiled.", "ok");
       setAgent("verify", "IDLE", "Verified", 100);
     }
@@ -277,6 +289,7 @@
     $("startBtn").onclick = async () => {
       if (state.running && state.paused) { state.paused = false; $("pauseBtn").textContent = "Pause"; return; }
       state.running = true; state.paused = false; state.started = performance.now(); state.last = 0; state.elapsed = 0; state.approved = false;
+      setHoloMode("mission-live");
       if (window.portalLink) await window.portalLink.connect();
       log("GROK", "Pack transport connected. Portisystems online.", "ok");
       requestAnimationFrame(tick);
@@ -284,10 +297,12 @@
     $("pauseBtn").onclick = () => {
       state.paused = !state.paused;
       $("pauseBtn").textContent = state.paused ? "Resume" : "Pause";
+      setHoloMode(state.paused ? "mission-paused" : "mission-live");
       if (window.portalLink) window.portalLink.setMissionState(state.paused ? "paused" : "running");
     };
     $("resetBtn").onclick = () => {
       state.running = false; state.elapsed = 0; state.progress = 0; state.waitingApproval = false; state.approved = false; state.stage = -1;
+      setHoloMode("");
       $("progressBar").style.width = "0";
       $("approvalRequest").hidden = true; $("approvalIdle").hidden = false;
       AGENTS.forEach((a) => setAgent(a.id, "IDLE", "Standby", 0));
@@ -298,7 +313,7 @@
     $("saveSetup").onclick = () => {
       state.mission = {
         seller: $("inSeller").value, phone: $("inPhone").value, title: $("inTitle").value,
-        price: Number($("inPrice").value), area: Number($("inArea").value),
+        price: Number($("inPrice").value), area: Number($("inArea").value), plot: Number($("inPlot").value),
         description: $("inDescription").value, youtube: $("inVideo").value,
         woj: $("inWoj").value, powiat: $("inPowiat").value, city: $("inCity").value, zip: $("inZip").value,
         district: $("inDistrict").value, street: $("inStreet").value, market: $("inMarket").value,
@@ -312,6 +327,7 @@
     };
     $("approveBtn").onclick = () => {
       state.waitingApproval = false; state.approved = true;
+      setHoloMode("mission-live");
       $("approvalRequest").hidden = true; $("approvalIdle").hidden = false;
       $("airlockMetric").textContent = "CLEAR";
       log("AIRLOCK", "Approved: " + ($("approvalNote").value || "no comment"), "ok");
