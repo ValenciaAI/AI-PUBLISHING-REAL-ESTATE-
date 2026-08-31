@@ -154,7 +154,7 @@
   </div>
 
   <dialog id="setupDialog">
-    <form method="dialog" class="setup">
+    <form method="dialog" class="setup" novalidate>
       <header>
         <h2>Mission Input</h2>
         <button value="close" type="submit">×</button>
@@ -170,7 +170,7 @@
           <label>Cena <input id="inPrice" type="number" min="0" step="1" value="4500000"> zł</label>
           <label>Powierzchnia użytkowa m² <input id="inArea" type="number" min="0" step="0.01" value="2280"></label>
           <label>Powierzchnia działki m² <input id="inPlot" type="number" min="0" step="0.01" value="21487"></label>
-          <p class="hint">Cena za m² (użytkowa): <b id="ppm">1 974 zł / m²</b></p>
+          <p class="hint">Cena za m² (użytkowa, live): <b id="ppm">1 974 zł / m²</b></p>
           <label>YouTube URL <input id="inVideo" type="text" placeholder="https://youtube.com/..."></label>
           <label>Opis <small><span id="descriptionCount">0</span>/5000</small>
             <textarea id="inDescription" maxlength="5000" rows="8">Sprzedam bezpośrednio – bez pośredników i prowizji
@@ -246,6 +246,6 @@ Nieruchomosci.pl</textarea>
 
   <script src="portal-adapter.js"></script>
   <script src="listing-ledger.js"></script>
-  <script src="ops-engine.js?v=ops-3"></script>
+  <script src="ops-engine.js?v=ops-4"></script>
 </body>
 </html>

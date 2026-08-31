@@ -345,6 +345,9 @@
     }
 
     if (stage === 4) {
+      parsePortals();
+      state.mission = collectMission();
+      applyMissionToUI();
       setAgent("publisher", "WORKING", "POST only known fields", 85);
       state.packs = state.portals.map((p) => payloadForPortal(p));
       state.packs.forEach((pack) => {
@@ -544,7 +547,11 @@
     };
     ["inTitle", "inDescription", "inPrice", "inArea", "inPlot", "inSeller", "inPhone", "inVideo",
       "inWoj", "inPowiat", "inCity", "inZip", "inDistrict", "inStreet", "inType", "inUse", "inRooms", "inMedia", "inPortals", "inCreds"
-    ].forEach((id) => $(id).addEventListener("input", livePrice));
+    ].forEach((id) => {
+      $(id).addEventListener("input", livePrice);
+      $(id).addEventListener("change", livePrice);
+      $(id).addEventListener("keyup", livePrice);
+    });
     $("inMarket").addEventListener("change", livePrice);
     $("inExcel").onchange = (e) => {
       const f = e.target.files[0];
